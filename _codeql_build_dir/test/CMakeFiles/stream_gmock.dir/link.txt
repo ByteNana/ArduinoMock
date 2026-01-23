@@ -1,1 +1,0 @@
-/home/runner/work/ArduinoMock/.codeql-scratch/dbs/cpp/working/autobuild/bin/c++ -g -Wl,--dependency-file=CMakeFiles/stream_gmock.dir/link.d CMakeFiles/stream_gmock.dir/stream_gmock_test.cpp.o -o stream_gmock  ../libArduinoNativeMocks.a ../lib/libgtest.a ../lib/libgmock.a ../lib/libgtest_main.a ../lib/libgtest.a

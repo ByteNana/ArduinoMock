@@ -1,1 +1,0 @@
-/home/runner/work/ArduinoMock/.codeql-scratch/dbs/cpp/working/autobuild/bin/c++ -g -Wl,--dependency-file=CMakeFiles/queue_gtest.dir/link.d CMakeFiles/queue_gtest.dir/queue_gtest.cpp.o -o queue_gtest  ../libArduinoNativeMocks.a ../lib/libgtest.a ../lib/libgmock.a ../lib/libgtest_main.a ../lib/libgtest.a

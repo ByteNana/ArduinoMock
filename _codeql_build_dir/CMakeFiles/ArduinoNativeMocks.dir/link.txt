@@ -1,2 +1,0 @@
-/usr/bin/ar qc libArduinoNativeMocks.a CMakeFiles/ArduinoNativeMocks.dir/src/freertos/queue/queue.cpp.o CMakeFiles/ArduinoNativeMocks.dir/src/freertos/semaphore/semaphore.cpp.o CMakeFiles/ArduinoNativeMocks.dir/src/freertos/task/task.cpp.o
-/usr/bin/ranlib libArduinoNativeMocks.a
