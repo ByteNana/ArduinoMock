@@ -1,5 +1,9 @@
 #include <Arduino.h>
+
+#ifdef ARDUINOMOCK_USE_GMOCK
 #include <gmock/gmock.h>
+#endif
+
 #include <gtest/gtest.h>
 
 using ::testing::_;
