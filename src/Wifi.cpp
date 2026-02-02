@@ -4,7 +4,6 @@
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <netinet/in.h>
-#include <netpacket/packet.h>
 
 #include <cstring>
 
@@ -58,36 +57,24 @@ IPAddress WiFiClass::localIP() {
 }
 
 String WiFiClass::macAddress() {
-  struct ifaddrs* ifaddr = nullptr;
+  FILE* pipe = nullptr;
+#if defined(__APPLE__)
+  pipe = popen("ifconfig en0 | awk '/ether/{print toupper($2)}'", "r");
+#elif defined(__linux__)
+  pipe = popen(
+      "cat /sys/class/net/$(ip route show default | awk '/default/{print $5}')/address | tr 'a-f' "
+      "'A-F'",
+      "r");
+#endif
+  if (!pipe) return String("00:00:00:00:00:00");
 
-  if (getifaddrs(&ifaddr) == -1) return String();
+  char buf[18] = {0};
+  fgets(buf, sizeof(buf), pipe);
+  pclose(pipe);
 
-  String result;
-
-  for (auto* ifa = ifaddr; ifa; ifa = ifa->ifa_next) {
-    if (!ifa->ifa_addr) continue;
-
-    if (!(ifa->ifa_flags & IFF_UP)) continue;
-
-    if (ifa->ifa_flags & IFF_LOOPBACK) continue;
-
-    if (ifa->ifa_addr->sa_family != AF_PACKET) continue;
-
-    auto* sa = reinterpret_cast<sockaddr_ll*>(ifa->ifa_addr);
-
-    if (sa->sll_halen != 6) continue;
-
-    char buf[18];
-    std::snprintf(
-        buf, sizeof(buf), "%02X:%02X:%02X:%02X:%02X:%02X", sa->sll_addr[0], sa->sll_addr[1],
-        sa->sll_addr[2], sa->sll_addr[3], sa->sll_addr[4], sa->sll_addr[5]);
-
-    result = buf;
-    break;
-  }
-
-  freeifaddrs(ifaddr);
-  return result;
+  // Trim newline
+  buf[strcspn(buf, "\n")] = 0;
+  return String(buf);
 }
 
 WiFiClass WiFi;

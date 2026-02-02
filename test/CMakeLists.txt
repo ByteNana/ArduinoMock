@@ -18,7 +18,7 @@ if(ENABLE_GTEST_TESTS)
 
   function(add_gtest name)
     add_executable(${name} ${ARGN})
-    target_link_libraries(${name} PRIVATE ArduinoNativeMocks GTest::gtest GTest::gmock GTest::gtest_main)
+    target_link_libraries(${name} PRIVATE ArduinoNativeMocks GTest::gmock_main)
     target_include_directories(${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
     add_test(NAME ${name} COMMAND ${name})
   endfunction()
