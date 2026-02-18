@@ -20,11 +20,8 @@ class WiFiClass {
   bool isConnected();
   IPAddress localIP();
   String macAddress();
-  bool begin(const char* ssid, const char* password) {
-    _status = WL_CONNECTED;
-    return true;
-  }
-  void disconnect() { _status = WL_DISCONNECTED; }
+  bool begin(const char* ssid, const char* password);
+  void disconnect();
 
   // test helpers
   void setRSSI(int32_t rssi) { _rssi = rssi; }

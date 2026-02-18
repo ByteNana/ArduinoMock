@@ -1,4 +1,4 @@
-#include "Wifi.h"
+#include "WiFi.h"
 
 #include <arpa/inet.h>
 #include <ifaddrs.h>
@@ -28,6 +28,10 @@ int32_t WiFiClass::RSSI() {
   pclose(pipe);
   return rssi;
 }
+
+wl_status_t WiFiClass::status() { return _status; }
+
+bool WiFiClass::isConnected() { return _status == WL_CONNECTED; }
 
 IPAddress WiFiClass::localIP() {
   struct ifaddrs* ifaddr = nullptr;
@@ -76,5 +80,12 @@ String WiFiClass::macAddress() {
   buf[strcspn(buf, "\n")] = 0;
   return String(buf);
 }
+
+bool WiFiClass::begin(const char* ssid, const char* password) {
+  _status = WL_CONNECTED;
+  return true;
+}
+
+void WiFiClass::disconnect() { _status = WL_DISCONNECTED; }
 
 WiFiClass WiFi;
