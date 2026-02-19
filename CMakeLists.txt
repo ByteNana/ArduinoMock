@@ -8,6 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
 set(LOG_LEVEL "3" CACHE STRING "Log level (0-5, where 5 is most verbose)")
+option(ARDUINOMOCK_USE_GMOCK "Use Google Mock" ON)
+option(BUILD_TESTING "Build tests" ON)
 
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -27,6 +29,21 @@ target_include_directories(ArduinoNativeMocks
   PUBLIC ${LIB_SRC_DIR}
 )
 
+if(BUILD_TESTING)
+  enable_testing()
+endif()
+
+if(BUILD_TESTING OR ARDUINOMOCK_USE_GMOCK)
+  add_subdirectory(test)
+endif()
+
+if(ARDUINOMOCK_USE_GMOCK)
+  target_compile_definitions(ArduinoNativeMocks PUBLIC ARDUINOMOCK_USE_GMOCK=1)
+  if(TARGET GTest::gmock)
+    target_link_libraries(ArduinoNativeMocks PUBLIC GTest::gmock)
+  endif()
+endif()
+
 find_package(Threads REQUIRED)
 target_link_libraries(ArduinoNativeMocks PUBLIC Threads::Threads)
 
@@ -37,6 +54,4 @@ if(NOT APPLE)
   target_link_libraries(ArduinoNativeMocks PUBLIC OpenSSL::Crypto)
 endif()
 
-enable_testing()
 add_subdirectory(examples)
-add_subdirectory(test)

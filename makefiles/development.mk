@@ -6,7 +6,7 @@
 # Makefile.
 # ==============================================================================
 
-.PHONY: setup build clean format check examples
+.PHONY: setup build clean format check examples test
 
 # ==============================================================================
 # Native Targets
@@ -15,7 +15,7 @@
 ## Setup the build environment
 setup:
 	@printf "\n\033[1;33m⚙️  Setting up build environment\033[0m\n\n"
-	@cmake -DLOG_LEVEL=$(LOG_LEVEL) -B$(BUILD_DIR)
+	@cmake -DLOG_LEVEL=$(LOG_LEVEL) $(if $(ARDUINOMOCK_USE_GMOCK),-DARDUINOMOCK_USE_GMOCK=$(ARDUINOMOCK_USE_GMOCK)) -B$(BUILD_DIR)
 	@# Expose compile_commands.json for clangd
 
 ## Build the project
