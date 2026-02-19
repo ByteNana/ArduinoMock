@@ -1,0 +1,21 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "default",
+      "binaryDir": "build",
+      "cacheVariables": {
+        "ARDUINOMOCK_USE_GMOCK": "OFF",
+        "BUILD_TESTING": "OFF"
+      }
+    },
+    {
+      "name": "gmock",
+      "binaryDir": "build",
+      "cacheVariables": {
+        "ARDUINOMOCK_USE_GMOCK": "ON",
+        "BUILD_TESTING": "ON"
+      }
+    }
+  ]
+}

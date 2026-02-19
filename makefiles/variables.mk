@@ -4,6 +4,7 @@
 
 SRC_DIRS := src test examples
 BUILD_DIR := build
+CMAKE_PRESET ?= default
 
 # ==============================================================================
 # Argument Capture

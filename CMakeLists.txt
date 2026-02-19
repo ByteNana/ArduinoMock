@@ -8,8 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
 set(LOG_LEVEL "3" CACHE STRING "Log level (0-5, where 5 is most verbose)")
-option(ARDUINOMOCK_USE_GMOCK "Use Google Mock" ON)
-option(BUILD_TESTING "Build tests" ON)
+option(ARDUINOMOCK_USE_GMOCK "Use Google Mock" OFF)
+option(BUILD_TESTING "Build tests" OFF)
 
 set(CMAKE_BUILD_TYPE Debug)
 
