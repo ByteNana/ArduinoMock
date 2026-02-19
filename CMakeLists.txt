@@ -23,6 +23,10 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
   ${LIB_SRC_DIR}/*.c
 )
 
+if(NOT ARDUINOMOCK_USE_GMOCK)
+  list(FILTER SRC_FILES EXCLUDE REGEX "StreamGMock\\.(cpp|h)$")
+endif()
+
 add_library(ArduinoNativeMocks STATIC ${SRC_FILES})
 
 target_include_directories(ArduinoNativeMocks
@@ -33,15 +37,12 @@ if(BUILD_TESTING)
   enable_testing()
 endif()
 
-if(BUILD_TESTING OR ARDUINOMOCK_USE_GMOCK)
+if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
-if(ARDUINOMOCK_USE_GMOCK)
-  target_compile_definitions(ArduinoNativeMocks PUBLIC ARDUINOMOCK_USE_GMOCK=1)
-  if(TARGET GTest::gmock)
-    target_link_libraries(ArduinoNativeMocks PUBLIC GTest::gmock)
-  endif()
+if(ARDUINOMOCK_USE_GMOCK AND TARGET GTest::gmock)
+  target_link_libraries(ArduinoNativeMocks PUBLIC GTest::gmock)
 endif()
 
 find_package(Threads REQUIRED)

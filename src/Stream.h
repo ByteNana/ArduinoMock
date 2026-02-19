@@ -1,21 +1,10 @@
 #pragma once
 
-#ifdef ARDUINOMOCK_USE_GMOCK
-#include <gmock/gmock.h>
-#endif
-
-#include <condition_variable>
-#include <mutex>
-#include <queue>
-#include <string>
+#include <cstddef>
+#include <cstdint>
 
 #include "WString.h"
 #include "times.h"
-
-#ifndef ARDUINOMOCK_USE_GMOCK
-#define EXPECT_CALL(mock, args) ()  // No-op when GMock is not used
-#define ON_CALL(mock, method) ()    // No-op when GMock is not used
-#endif
 
 class Stream {
  protected:
@@ -37,7 +26,6 @@ class Stream {
   virtual size_t println() { return println(""); }  // Empty line
   virtual size_t println(int value) { return println(String(value)); }
 
-  // Add timedRead for HttpClient
   int timedRead() {
     int c;
     _startMillis = millis();
@@ -45,10 +33,9 @@ class Stream {
       c = read();
       if (c >= 0) { return c; }
     } while (millis() - _startMillis < _timeout);
-    return -1;  // -1 indicates timeout
+    return -1;
   }
 
-  // These `print` methods are fine, they delegate to `write`.
   size_t print(const String& str) {
     return write(reinterpret_cast<const uint8_t*>(str.c_str()), str.length());
   }
@@ -61,44 +48,7 @@ class Stream {
   }
 };
 
-// Mock Stream for testing
-class MockStream : public Stream {
- private:
-  std::queue<uint8_t> rxBuffer;
-  std::queue<uint8_t> txBuffer;
-  mutable std::mutex rxMutex;
-  mutable std::mutex txMutex;
-  std::condition_variable dataAvailable;  // For signaling RX data
-
- public:
-#ifdef ARDUINOMOCK_USE_GMOCK
-  MOCK_METHOD(int, available, (), (override));
-  MOCK_METHOD(int, read, (), (override));
-  MOCK_METHOD(size_t, write, (uint8_t), (override));
-  MOCK_METHOD(size_t, write, (const uint8_t*, size_t), (override));
-  MOCK_METHOD(void, flush, (), (override));
-  MOCK_METHOD(int, peek, (), (override));
-
-#endif
-
-  void SetupDefaults();
-
-  void InjectRxData(const std::string& data);
-
-  // Retrieve data from the TX buffer to verify outgoing data
-  std::string GetTxData();
-
-  // Clear the TX buffer
-  void ClearTxData();
-  void ClearRxData();
-  operator bool() const { return true; }
-};
-
-#ifdef ARDUINOMOCK_USE_GMOCK
-class HardwareSerial : public MockStream {
-#else
 class HardwareSerial : public Stream {
-#endif
  public:
   HardwareSerial(int indexA) {}
   void begin(unsigned long baud) {}
@@ -106,6 +56,7 @@ class HardwareSerial : public Stream {
   void print(const String& str) {}
   size_t write(uint8_t c) { return 1; }
   size_t write(const uint8_t* buffer, size_t size) { return size; }
+  void flush() {}
   int available() { return 0; }
   int read() { return -1; }
   int peek() { return -1; }
