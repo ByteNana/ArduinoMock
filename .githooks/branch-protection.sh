@@ -9,8 +9,7 @@
 set -euo pipefail
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-REMOTE="$1"
-REMOTE_URL="$2"
+REMOTE="${1:-origin}"
 
 ZERO="0000000000000000000000000000000000000000"
 
