@@ -15,6 +15,12 @@
 ## Setup the build environment
 setup:
 	@printf "\n\033[1;33m⚙️  Setting up build environment\033[0m\n\n"
+	@if command -v lefthook >/dev/null 2>&1; then \
+		lefthook install; \
+		printf "\033[1;32m✔ Lefthook hooks installed\033[0m\n\n"; \
+	else \
+		printf "\033[1;33m⚠ Lefthook not found — skipping hook install (brew install lefthook)\033[0m\n\n"; \
+	fi
 	@cmake --preset $(CMAKE_PRESET) -DLOG_LEVEL=$(LOG_LEVEL)
 
 ## Build the project
