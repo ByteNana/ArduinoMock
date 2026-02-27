@@ -7,7 +7,7 @@
 static String md5_of(const String& s) {
   MD5Builder md5;
   md5.begin();
-  md5.add((uint8_t*)s.c_str(), s.size());
+  md5.add((uint8_t*)s.c_str(), s.length());
   md5.calculate();
   return md5.toString();
 }
