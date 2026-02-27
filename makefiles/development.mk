@@ -6,7 +6,7 @@
 # Makefile.
 # ==============================================================================
 
-.PHONY: setup build clean format check examples
+.PHONY: setup build clean format check examples test
 
 # ==============================================================================
 # Native Targets
@@ -15,8 +15,7 @@
 ## Setup the build environment
 setup:
 	@printf "\n\033[1;33m⚙️  Setting up build environment\033[0m\n\n"
-	@cmake -DLOG_LEVEL=$(LOG_LEVEL) -B$(BUILD_DIR)
-	@# Expose compile_commands.json for clangd
+	@cmake --preset $(CMAKE_PRESET) -DLOG_LEVEL=$(LOG_LEVEL)
 
 ## Build the project
 build: setup
@@ -28,8 +27,12 @@ clean:
 	@printf "\n\033[1;33m🧹 Cleaning build artifacts\033[0m\n\n"
 	@rm -rf $(BUILD_DIR)
 
-## Run unit tests
-test: build
+## Build and run unit tests
+test:
+	@printf "\n\033[1;33m⚙️  Setting up test environment\033[0m\n\n"
+	@cmake --preset gmock -DLOG_LEVEL=$(LOG_LEVEL)
+	@printf "\n\033[1;33m🔨 Building tests\033[0m\n\n"
+	@cmake --build $(BUILD_DIR)
 	@printf "\n\033[1;33m🧪 Running Unit Tests\033[0m\n\n"
 	GTEST_COLOR=1 ctest --output-on-failure --test-dir build -V
 

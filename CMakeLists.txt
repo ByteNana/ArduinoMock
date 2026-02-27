@@ -8,6 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
 set(LOG_LEVEL "3" CACHE STRING "Log level (0-5, where 5 is most verbose)")
+option(ARDUINOMOCK_USE_GMOCK "Use Google Mock" OFF)
+option(BUILD_TESTING "Build tests" OFF)
 
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -21,11 +23,27 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
   ${LIB_SRC_DIR}/*.c
 )
 
+if(NOT ARDUINOMOCK_USE_GMOCK)
+  list(FILTER SRC_FILES EXCLUDE REGEX "StreamGMock\\.(cpp|h)$")
+endif()
+
 add_library(ArduinoNativeMocks STATIC ${SRC_FILES})
 
 target_include_directories(ArduinoNativeMocks
   PUBLIC ${LIB_SRC_DIR}
 )
+
+if(BUILD_TESTING)
+  enable_testing()
+endif()
+
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
+
+if(ARDUINOMOCK_USE_GMOCK AND TARGET GTest::gmock)
+  target_link_libraries(ArduinoNativeMocks PUBLIC GTest::gmock)
+endif()
 
 find_package(Threads REQUIRED)
 target_link_libraries(ArduinoNativeMocks PUBLIC Threads::Threads)
@@ -37,6 +55,4 @@ if(NOT APPLE)
   target_link_libraries(ArduinoNativeMocks PUBLIC OpenSSL::Crypto)
 endif()
 
-enable_testing()
 add_subdirectory(examples)
-add_subdirectory(test)

@@ -1,11 +1,7 @@
 #pragma once
 
-#include <gmock/gmock.h>
-
-#include <condition_variable>
-#include <mutex>
-#include <queue>
-#include <string>
+#include <cstddef>
+#include <cstdint>
 
 #include "WString.h"
 #include "times.h"
@@ -30,7 +26,6 @@ class Stream {
   virtual size_t println() { return println(""); }  // Empty line
   virtual size_t println(int value) { return println(String(value)); }
 
-  // Add timedRead for HttpClient
   int timedRead() {
     int c;
     _startMillis = millis();
@@ -38,10 +33,9 @@ class Stream {
       c = read();
       if (c >= 0) { return c; }
     } while (millis() - _startMillis < _timeout);
-    return -1;  // -1 indicates timeout
+    return -1;
   }
 
-  // These `print` methods are fine, they delegate to `write`.
   size_t print(const String& str) {
     return write(reinterpret_cast<const uint8_t*>(str.c_str()), str.length());
   }
@@ -54,86 +48,7 @@ class Stream {
   }
 };
 
-// Mock Stream for testing
-class MockStream : public Stream {
- private:
-  std::queue<uint8_t> rxBuffer;
-  std::queue<uint8_t> txBuffer;
-  mutable std::mutex rxMutex;
-  mutable std::mutex txMutex;
-  std::condition_variable dataAvailable;  // For signaling RX data
-
- public:
-  MOCK_METHOD(int, available, (), (override));
-  MOCK_METHOD(int, read, (), (override));
-  MOCK_METHOD(size_t, write, (uint8_t), (override));
-  MOCK_METHOD(size_t, write, (const uint8_t*, size_t), (override));
-  MOCK_METHOD(void, flush, (), (override));
-  MOCK_METHOD(int, peek, (), (override));
-
-  void SetupDefaults() {
-    ON_CALL(*this, available()).WillByDefault([this]() {
-      std::lock_guard<std::mutex> lock(rxMutex);
-      return static_cast<int>(rxBuffer.size());
-    });
-
-    ON_CALL(*this, read()).WillByDefault([this]() {
-      std::lock_guard<std::mutex> lock(rxMutex);
-      if (rxBuffer.empty()) return -1;
-      int c = rxBuffer.front();
-      rxBuffer.pop();
-      return c;
-    });
-
-    ON_CALL(*this, write(testing::_)).WillByDefault([this](uint8_t c) {
-      std::lock_guard<std::mutex> lock(txMutex);
-      txBuffer.push(c);
-      return 1;
-    });
-
-    ON_CALL(*this, write(testing::_, testing::_))
-        .WillByDefault([this](const uint8_t* buffer, size_t size) {
-          std::lock_guard<std::mutex> lock(txMutex);
-          for (size_t i = 0; i < size; i++) { txBuffer.push(buffer[i]); }
-          return size;
-        });
-
-    // Add default action for flush() if not already present
-    ON_CALL(*this, flush()).WillByDefault([]() { /* No-op for mock */ });
-  }
-
-  void InjectRxData(const std::string& data) {
-    std::lock_guard<std::mutex> lock(rxMutex);
-    for (char c : data) { rxBuffer.push(static_cast<uint8_t>(c)); }
-    dataAvailable.notify_all();  // Notify any waiting readers
-  }
-
-  // Retrieve data from the TX buffer to verify outgoing data
-  std::string GetTxData() {
-    std::lock_guard<std::mutex> lock(txMutex);
-    std::string result;
-    while (!txBuffer.empty()) {
-      result += static_cast<char>(txBuffer.front());
-      txBuffer.pop();
-    }
-    return result;
-  }
-
-  // Clear the TX buffer
-  void ClearTxData() {
-    std::lock_guard<std::mutex> lock(txMutex);
-    std::queue<uint8_t> emptyQueue;
-    std::swap(txBuffer, emptyQueue);
-  }
-  void ClearRxData() {
-    std::lock_guard<std::mutex> lock(rxMutex);
-    std::queue<uint8_t> emptyQueue;
-    std::swap(rxBuffer, emptyQueue);
-  }
-  operator bool() const { return true; }
-};
-
-class HardwareSerial : public MockStream {
+class HardwareSerial : public Stream {
  public:
   HardwareSerial(int indexA) {}
   void begin(unsigned long baud) {}
@@ -141,6 +56,7 @@ class HardwareSerial : public MockStream {
   void print(const String& str) {}
   size_t write(uint8_t c) { return 1; }
   size_t write(const uint8_t* buffer, size_t size) { return size; }
+  void flush() {}
   int available() { return 0; }
   int read() { return -1; }
   int peek() { return -1; }
