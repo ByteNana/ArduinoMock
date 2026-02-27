@@ -22,6 +22,18 @@ inline bool isHexadecimalDigit(char c) {
   return isdigit(static_cast<unsigned char>(c)) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
 }
 
+template <typename T, typename U>
+inline constexpr auto min(T a, U b) -> typename std::common_type<T, U>::type {
+  using R = typename std::common_type<T, U>::type;
+  return (a < b) ? R(a) : R(b);
+}
+
+template <typename T, typename U>
+inline constexpr auto max(T a, U b) -> typename std::common_type<T, U>::type {
+  using R = typename std::common_type<T, U>::type;
+  return (a > b) ? R(a) : R(b);
+}
+
 inline bool isDigit(char c) { return isdigit(static_cast<unsigned char>(c)); }
 
 inline bool isAlpha(char c) { return isalpha(static_cast<unsigned char>(c)); }

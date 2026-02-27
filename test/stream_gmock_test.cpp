@@ -1,13 +1,13 @@
 #include <Arduino.h>
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <stream/StreamGMock.h>
 
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 
 TEST(StreamGMockTest, PrintAndPrintlnInvokeWrites) {
-  MockStream s;
+  StreamGMock s;
   s.SetupDefaults();
 
   EXPECT_CALL(s, write(_, _)).Times(1).WillOnce(Invoke([](const uint8_t* buf, size_t size) {
