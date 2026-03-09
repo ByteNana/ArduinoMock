@@ -1,0 +1,9 @@
+{
+  "name": "ArduinoMock",
+  "version": "0.2.0-rc.1",
+  "description": "Arduino native mocks for host-based testing",
+  "platforms": ["native"],
+  "build": {
+    "srcFilter": ["+<*>", "-<stream/StreamGMock.cpp>"]
+  }
+}
