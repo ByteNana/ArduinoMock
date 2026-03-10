@@ -8,10 +8,10 @@ class WiFiClient {
   void stop();
   operator bool() const;
 
-  // Test helper
-  void setCanConnect(bool v) { _canConnect = v; }
+  // Test helper — static so tests can configure before instantiation
+  static void setCanConnect(bool v) { _canConnect = v; }
 
  private:
-  bool _canConnect = true;
+  static bool _canConnect;
   bool _connected = false;
 };
