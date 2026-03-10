@@ -5,6 +5,7 @@
 #include "queue/queue.h"
 #include "semaphore/semaphore.h"
 #include "task/task.h"
+#include "timer/timer.h"
 
 inline BaseType_t xTaskCreatePinnedToCore(
     TaskFunction_t pxTaskCode, const char* const pcName, const portSTACK_TYPE usStackDepth,
