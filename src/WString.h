@@ -6,6 +6,7 @@
 class String {
  private:
   std::string _data;
+  mutable size_t _readPos = 0;
 
  public:
   String() {}
@@ -187,6 +188,21 @@ class String {
   }
 
   bool isEmpty() const { return _data.empty(); }
+
+  // Stream-like read interface (used by ArduinoJson Reader<String>)
+  int read() const {
+    if (_readPos >= _data.size()) return -1;
+    return static_cast<unsigned char>(_data[_readPos++]);
+  }
+
+  int peek() const {
+    if (_readPos >= _data.size()) return -1;
+    return static_cast<unsigned char>(_data[_readPos]);
+  }
+
+  int available() const {
+    return (_readPos < _data.size()) ? static_cast<int>(_data.size() - _readPos) : 0;
+  }
 };
 
 inline bool operator==(const char* lhs, const String& rhs) { return rhs == lhs; }
