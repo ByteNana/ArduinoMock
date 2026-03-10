@@ -1,5 +1,7 @@
 #include "WiFiClient.h"
 
+bool WiFiClient::_canConnect = true;
+
 bool WiFiClient::connect(IPAddress, uint16_t, int) {
   _connected = _canConnect;
   return _connected;

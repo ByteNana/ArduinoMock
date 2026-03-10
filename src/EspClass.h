@@ -27,6 +27,14 @@
 #define CPU_FREQ_MHZ 240
 #endif
 
+#ifndef FLASH_CHIP_SPEED
+#define FLASH_CHIP_SPEED (80 * 1000 * 1000)  // 80MHz
+#endif
+
+#ifndef RTC_DATA_ATTR
+#define RTC_DATA_ATTR
+#endif
+
 class EspClass {
  public:
   size_t getFreeHeap() { return FREE_HEAP; }
@@ -35,6 +43,7 @@ class EspClass {
   void restart() {}
   uint32_t getChipId() { return MOCK_CHIP_ID; }
   uint32_t getFlashChipSize() { return FLASH_CHIP_SIZE; }
+  uint32_t getFlashChipSpeed() { return FLASH_CHIP_SPEED; }
   uint32_t getCpuFreqMHz() { return CPU_FREQ_MHZ; }
 };
 

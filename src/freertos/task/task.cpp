@@ -101,6 +101,15 @@ TickType_t xTaskGetTickCount(void) {
   return static_cast<TickType_t>(ms);
 }
 
+BaseType_t xTaskNotify(
+    TaskHandle_t /*xTaskToNotify*/, uint32_t /*ulValue*/, eNotifyAction /*eAction*/) {
+  return pdPASS;
+}
+
+uint32_t ulTaskNotifyTake(BaseType_t /*xClearCountOnExit*/, TickType_t /*xTicksToWait*/) {
+  return 0;
+}
+
 size_t xPortGetFreeHeapSize(void) { return 1024 * 1024; }
 
 }  // extern "C"
