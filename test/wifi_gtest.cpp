@@ -1,0 +1,131 @@
+#include <gtest/gtest.h>
+
+#include "WiFi.h"
+#include "WiFiClient.h"
+
+class WiFiTest : public ::testing::Test {
+ protected:
+  void SetUp() override { WiFi.reset(); }
+};
+
+TEST_F(WiFiTest, BeginConnectsByDefault) {
+  EXPECT_TRUE(WiFi.begin("TestSSID", "password"));
+  EXPECT_EQ(WiFi.status(), WL_CONNECTED);
+  EXPECT_TRUE(WiFi.isConnected());
+}
+
+TEST_F(WiFiTest, BeginRespectsSetBeginConnects) {
+  WiFi.setBeginConnects(false);
+  EXPECT_FALSE(WiFi.begin("TestSSID", "password"));
+  EXPECT_EQ(WiFi.status(), WL_CONNECT_FAILED);
+  EXPECT_FALSE(WiFi.isConnected());
+}
+
+TEST_F(WiFiTest, DisconnectChangesStatus) {
+  WiFi.begin("TestSSID", "password");
+  WiFi.disconnect();
+  EXPECT_EQ(WiFi.status(), WL_DISCONNECTED);
+  EXPECT_FALSE(WiFi.isConnected());
+}
+
+TEST_F(WiFiTest, DisconnectWithArgs) {
+  WiFi.begin("TestSSID", "password");
+  WiFi.disconnect(true, true);
+  EXPECT_EQ(WiFi.status(), WL_DISCONNECTED);
+}
+
+TEST_F(WiFiTest, RSSIReturnsMockValue) {
+  EXPECT_EQ(WiFi.RSSI(), -50);
+  WiFi.setRSSI(-75);
+  EXPECT_EQ(WiFi.RSSI(), -75);
+}
+
+TEST_F(WiFiTest, ScanNetworksWithResults) {
+  std::vector<MockScanResult> results = {{"Network1", -40}, {"Network2", -80}, {"Hidden", -90}};
+  WiFi.setScanResults(results);
+  EXPECT_EQ(WiFi.scanNetworks(), 3);
+  EXPECT_STREQ(WiFi.SSID(0).c_str(), "Network1");
+  EXPECT_STREQ(WiFi.SSID(1).c_str(), "Network2");
+  EXPECT_STREQ(WiFi.SSID(2).c_str(), "Hidden");
+  EXPECT_EQ(WiFi.RSSI(0), -40);
+  EXPECT_EQ(WiFi.RSSI(1), -80);
+  EXPECT_EQ(WiFi.RSSI(2), -90);
+}
+
+TEST_F(WiFiTest, SSIDReturnsConnectedSSID) {
+  WiFi.begin("MyWiFi", "pass");
+  EXPECT_STREQ(WiFi.SSID().c_str(), "MyWiFi");
+}
+
+TEST_F(WiFiTest, HostByNameSuccess) {
+  IPAddress result;
+  EXPECT_EQ(WiFi.hostByName("example.com", result), 1);
+  EXPECT_EQ(result[0], 8);
+  EXPECT_EQ(result[1], 8);
+  EXPECT_EQ(result[2], 8);
+  EXPECT_EQ(result[3], 8);
+}
+
+TEST_F(WiFiTest, HostByNameFailure) {
+  WiFi.setDnsResult(false);
+  IPAddress result;
+  EXPECT_EQ(WiFi.hostByName("example.com", result), 0);
+}
+
+TEST_F(WiFiTest, GatewaySubnetDns) {
+  IPAddress gw = WiFi.gatewayIP();
+  EXPECT_EQ(gw[0], 192);
+  EXPECT_EQ(gw[1], 168);
+  EXPECT_EQ(gw[2], 1);
+  EXPECT_EQ(gw[3], 1);
+
+  IPAddress sm = WiFi.subnetMask();
+  EXPECT_EQ(sm[0], 255);
+  EXPECT_EQ(sm[1], 255);
+  EXPECT_EQ(sm[2], 255);
+  EXPECT_EQ(sm[3], 0);
+
+  IPAddress dns = WiFi.dnsIP();
+  EXPECT_EQ(dns[0], 8);
+  EXPECT_EQ(dns[1], 8);
+  EXPECT_EQ(dns[2], 8);
+  EXPECT_EQ(dns[3], 8);
+}
+
+TEST_F(WiFiTest, WaitForConnectResultReturnsStatus) {
+  WiFi.setStatus(WL_DISCONNECTED);
+  EXPECT_EQ(WiFi.waitForConnectResult(), WL_DISCONNECTED);
+}
+
+TEST_F(WiFiTest, ResetRestoresDefaults) {
+  WiFi.setRSSI(-99);
+  WiFi.setBeginConnects(false);
+  WiFi.setDnsResult(false);
+  WiFi.setScanResults({{"net", -50}});
+  WiFi.reset();
+  EXPECT_EQ(WiFi.RSSI(), -50);
+  EXPECT_EQ(WiFi.status(), WL_CONNECTED);
+  EXPECT_EQ(WiFi.scanNetworks(), 0);
+}
+
+// WiFiClient tests
+
+TEST(WiFiClientTest, ConnectsByDefault) {
+  WiFiClient client;
+  EXPECT_TRUE(client.connect(IPAddress(8, 8, 8, 8), 80));
+  EXPECT_TRUE(static_cast<bool>(client));
+}
+
+TEST(WiFiClientTest, SetCanConnectFalse) {
+  WiFiClient client;
+  client.setCanConnect(false);
+  EXPECT_FALSE(client.connect(IPAddress(8, 8, 8, 8), 80));
+  EXPECT_FALSE(static_cast<bool>(client));
+}
+
+TEST(WiFiClientTest, StopDisconnects) {
+  WiFiClient client;
+  client.connect(IPAddress(8, 8, 8, 8), 80);
+  client.stop();
+  EXPECT_FALSE(static_cast<bool>(client));
+}
