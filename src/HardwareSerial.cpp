@@ -1,4 +1,4 @@
-#include "Stream.h"
+#include "HardwareSerial.h"
 
 HardwareSerial Serial(0);
 HardwareSerial Serial2(1);
