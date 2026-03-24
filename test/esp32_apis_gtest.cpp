@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "Arduino.h"
 #include "EspClass.h"
 #include "WiFi.h"
 #include "WiFiClient.h"
@@ -65,3 +66,17 @@ TEST(EspClassTest, RtcDataAttrDefined) {
   RTC_DATA_ATTR int x = 42;
   EXPECT_EQ(x, 42);
 }
+
+TEST(EspClassTest, GetEfuseMacReturnsMockValue) {
+  EXPECT_EQ(ESP.getEfuseMac(), static_cast<uint64_t>(MOCK_EFUSE_MAC));
+}
+
+// --- String base constructors ---
+
+TEST(StringBaseTest, HexFormatting) { EXPECT_EQ(String(0xABCDUL, HEX), "abcd"); }
+
+TEST(StringBaseTest, BinaryFormatting) { EXPECT_EQ(String(255UL, BIN), "11111111"); }
+
+TEST(StringBaseTest, OctalFormatting) { EXPECT_EQ(String(8UL, OCT), "10"); }
+
+TEST(StringBaseTest, DecimalFormatting) { EXPECT_EQ(String(42UL, DEC), "42"); }
