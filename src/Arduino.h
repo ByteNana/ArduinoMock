@@ -12,6 +12,7 @@ typedef bool boolean;
 typedef uint8_t byte;
 typedef uint16_t word;
 
+#include "HardwareSerial.h"
 #include "Stream.h"
 #include "WString.h"
 #include "times.h"
