@@ -8,6 +8,14 @@
 
 #include "IPAddress.h"
 
+// WiFi mode — matches ESP32 Arduino Core wifi_mode_t values
+typedef enum {
+  WIFI_OFF = 0,
+  WIFI_STA = 1,
+  WIFI_AP = 2,
+  WIFI_AP_STA = 3,
+} wifi_mode_t;
+
 // Values match ESP32 Arduino Core wifi_sta_status_t
 typedef enum {
   WL_IDLE_STATUS = 0,
@@ -34,6 +42,8 @@ class WiFiClass {
   IPAddress localIP();
   String macAddress();
   bool begin(const char* ssid, const char* password);
+  void mode(wifi_mode_t m) { _mode = m; }
+  wifi_mode_t getMode() const { return _mode; }
   void disconnect();
 
   // Extended API
@@ -62,6 +72,7 @@ class WiFiClass {
  private:
   int32_t _rssi = -50;
   wl_status_t _status = WL_CONNECTED;
+  wifi_mode_t _mode = WIFI_STA;
   std::vector<MockScanResult> _scanResults;
   bool _dnsSuccess = true;
   bool _beginConnects = true;
