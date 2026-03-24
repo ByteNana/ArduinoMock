@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "FS.h"
 #include "LittleFS.h"
 #include "SPIFFS.h"
 
@@ -124,4 +125,48 @@ TEST_F(SPIFFSTest, LittleFSAlias) {
   File f = LittleFS.open("/fs.txt", FILE_READ);
   EXPECT_TRUE(static_cast<bool>(f));
   EXPECT_STREQ(f.readString().c_str(), "littlefs");
+}
+
+TEST_F(SPIFFSTest, ReadStringUntilStopsAtDelimiter) {
+  SPIFFS.addFile("/delim.txt", "hello|world");
+  File f = SPIFFS.open("/delim.txt", FILE_READ);
+  String result = f.readStringUntil('|');
+  EXPECT_STREQ(result.c_str(), "hello");
+}
+
+TEST_F(SPIFFSTest, ReadStringUntilNewlineReturnsFirstLine) {
+  SPIFFS.addFile("/lines.txt", "line1\nline2\nline3");
+  File f = SPIFFS.open("/lines.txt", FILE_READ);
+  String result = f.readStringUntil('\n');
+  EXPECT_STREQ(result.c_str(), "line1");
+}
+
+TEST_F(SPIFFSTest, ReadStringUntilAtEofReturnsRemaining) {
+  SPIFFS.addFile("/eof.txt", "abc");
+  File f = SPIFFS.open("/eof.txt", FILE_READ);
+  // Read past first byte so we're mid-stream, then read until '\n' (not present)
+  f.read();  // consume 'a'
+  String result = f.readStringUntil('\n');
+  EXPECT_STREQ(result.c_str(), "bc");
+}
+
+TEST_F(SPIFFSTest, ReadStringUntilDelimiterNotPresentReturnsFullContent) {
+  SPIFFS.addFile("/full.txt", "no delimiter here");
+  File f = SPIFFS.open("/full.txt", FILE_READ);
+  String result = f.readStringUntil('|');
+  EXPECT_STREQ(result.c_str(), "no delimiter here");
+}
+
+TEST_F(SPIFFSTest, FSHeaderIncludeCompiles) {
+  // This test verifies that including FS.h (which re-exports SPIFFS.h) compiles
+  // and the File/MockSPIFFS types are accessible via that include path.
+  SPIFFS.addFile("/fstest.txt", "via FS.h");
+  File f = SPIFFS.open("/fstest.txt", FILE_READ);
+  EXPECT_TRUE(static_cast<bool>(f));
+  EXPECT_STREQ(f.readString().c_str(), "via FS.h");
+}
+
+TEST_F(SPIFFSTest, LittleFSBeginFormatOnFailReturnsTrue) {
+  LittleFS.reset();
+  EXPECT_TRUE(LittleFS.begin(true));
 }
