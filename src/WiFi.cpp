@@ -114,6 +114,7 @@ void WiFiClass::onEvent(std::function<void(int)>) {}
 void WiFiClass::reset() {
   _rssi = -50;
   _status = WL_CONNECTED;
+  _mode = WIFI_STA;
   _scanResults.clear();
   _dnsSuccess = true;
   _beginConnects = true;

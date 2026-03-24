@@ -108,6 +108,40 @@ TEST_F(WiFiTest, ResetRestoresDefaults) {
   EXPECT_EQ(WiFi.scanNetworks(), 0);
 }
 
+// --- wifi_mode_t constants ---
+
+TEST_F(WiFiTest, WifiModeConstantsMatchESP32Values) {
+  EXPECT_EQ(WIFI_OFF, 0);
+  EXPECT_EQ(WIFI_STA, 1);
+  EXPECT_EQ(WIFI_AP, 2);
+  EXPECT_EQ(WIFI_AP_STA, 3);
+}
+
+// --- mode() / getMode() ---
+
+TEST_F(WiFiTest, DefaultModeIsWifiSta) { EXPECT_EQ(WiFi.getMode(), WIFI_STA); }
+
+TEST_F(WiFiTest, ModeStoresValue) {
+  WiFi.mode(WIFI_AP);
+  EXPECT_EQ(WiFi.getMode(), WIFI_AP);
+}
+
+TEST_F(WiFiTest, ModeApSta) {
+  WiFi.mode(WIFI_AP_STA);
+  EXPECT_EQ(WiFi.getMode(), WIFI_AP_STA);
+}
+
+TEST_F(WiFiTest, ModeOff) {
+  WiFi.mode(WIFI_OFF);
+  EXPECT_EQ(WiFi.getMode(), WIFI_OFF);
+}
+
+TEST_F(WiFiTest, ResetRestoresDefaultMode) {
+  WiFi.mode(WIFI_AP);
+  WiFi.reset();
+  EXPECT_EQ(WiFi.getMode(), WIFI_STA);
+}
+
 // WiFiClient tests
 
 TEST(WiFiClientTest, ConnectsByDefault) {
