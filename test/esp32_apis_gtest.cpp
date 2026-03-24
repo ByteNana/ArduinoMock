@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "Arduino.h"
-#include "EspClass.h"
+#include "Esp.h"
 #include "WiFi.h"
 #include "WiFiClient.h"
 #include "freertos/FreeRTOS.h"

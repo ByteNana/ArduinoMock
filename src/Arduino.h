@@ -17,6 +17,7 @@ typedef uint16_t word;
 #define OCT 8
 #define BIN 2
 
+#include "Esp.h"
 #include "HardwareSerial.h"
 // Arduino math macros
 #ifndef PI
