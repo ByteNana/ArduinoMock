@@ -7,6 +7,10 @@
 #include <random>
 #include <thread>
 
+#ifndef ARDUINO
+#define ARDUINO 10813
+#endif
+
 // Arduino type definitions
 typedef bool boolean;
 typedef uint8_t byte;
