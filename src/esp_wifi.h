@@ -41,3 +41,9 @@ inline esp_err_t esp_wifi_get_channel(uint8_t* primary, wifi_second_chan_t* seco
   if (second) *second = WIFI_SECOND_CHAN_NONE;
   return ESP_OK;
 }
+
+inline esp_err_t esp_wifi_set_mac(wifi_interface_t ifx, const uint8_t* mac) {
+  (void)ifx;
+  (void)mac;
+  return ESP_OK;
+}
