@@ -17,9 +17,7 @@ TEST(HardwareSerialTest, BeginBaudConfigPins) {
   s.begin(9600, SERIAL_8N1, 16, 17);
 }
 
-TEST(HardwareSerialTest, SerialConfigConstantsDefined) {
-  EXPECT_EQ(SERIAL_8N1, 0x800001cUL);
-}
+TEST(HardwareSerialTest, SerialConfigConstantsDefined) { EXPECT_EQ(SERIAL_8N1, 0x800001cUL); }
 
 TEST(HardwareSerialTest, GlobalSerialInstances) {
   Serial.begin(115200);
