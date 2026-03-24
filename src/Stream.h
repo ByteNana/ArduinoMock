@@ -48,10 +48,26 @@ class Stream {
   }
 };
 
+// ESP32 serial config constants
+#ifndef SERIAL_8N1
+#define SERIAL_8N1 0x800001cUL
+#endif
+#ifndef SERIAL_8N2
+#define SERIAL_8N2 0x800003cUL
+#endif
+#ifndef SERIAL_8E1
+#define SERIAL_8E1 0x8000016UL
+#endif
+#ifndef SERIAL_8O1
+#define SERIAL_8O1 0x8000017UL
+#endif
+
 class HardwareSerial : public Stream {
  public:
   HardwareSerial(int indexA) {}
   void begin(unsigned long baud) {}
+  void begin(unsigned long baud, uint32_t config) {}
+  void begin(unsigned long baud, uint32_t config, int8_t rxPin, int8_t txPin) {}
   void println(const String& str) {}
   void print(const String& str) {}
   size_t write(uint8_t c) { return 1; }
