@@ -12,6 +12,11 @@ typedef bool boolean;
 typedef uint8_t byte;
 typedef uint16_t word;
 
+#define DEC 10
+#define HEX 16
+#define OCT 8
+#define BIN 2
+
 #include "HardwareSerial.h"
 #include "Stream.h"
 #include "WString.h"

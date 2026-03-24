@@ -35,6 +35,10 @@
 #define RTC_DATA_ATTR
 #endif
 
+#ifndef MOCK_EFUSE_MAC
+#define MOCK_EFUSE_MAC 0x112233445566ULL
+#endif
+
 class EspClass {
  public:
   size_t getFreeHeap() { return FREE_HEAP; }
@@ -45,6 +49,7 @@ class EspClass {
   uint32_t getFlashChipSize() { return FLASH_CHIP_SIZE; }
   uint32_t getFlashChipSpeed() { return FLASH_CHIP_SPEED; }
   uint32_t getCpuFreqMHz() { return CPU_FREQ_MHZ; }
+  uint64_t getEfuseMac() { return MOCK_EFUSE_MAC; }
 };
 
 extern EspClass ESP;

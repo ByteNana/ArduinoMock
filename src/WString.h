@@ -1,7 +1,21 @@
 #pragma once
 
+#include <cstdio>
 #include <string>
 #include <type_traits>
+
+#ifndef DEC
+#define DEC 10
+#endif
+#ifndef HEX
+#define HEX 16
+#endif
+#ifndef OCT
+#define OCT 8
+#endif
+#ifndef BIN
+#define BIN 2
+#endif
 
 class String {
  private:
@@ -16,6 +30,32 @@ class String {
 
   template <typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
   explicit String(T value) : _data(std::to_string(value)) {}
+
+  String(unsigned long value, unsigned char base) {
+    if (base == HEX) {
+      char buf[17];
+      snprintf(buf, sizeof(buf), "%lx", value);
+      _data = buf;
+    } else if (base == OCT) {
+      char buf[23];
+      snprintf(buf, sizeof(buf), "%lo", value);
+      _data = buf;
+    } else if (base == BIN) {
+      if (value == 0) {
+        _data = "0";
+        return;
+      }
+      std::string bits;
+      unsigned long v = value;
+      while (v > 0) {
+        bits = static_cast<char>('0' + (v & 1)) + bits;
+        v >>= 1;
+      }
+      _data = bits;
+    } else {
+      _data = std::to_string(value);
+    }
+  }
 
   String& operator=(const char* str) {
     _data = str;
