@@ -47,4 +47,3 @@ class Stream {
     return n;
   }
 };
-
