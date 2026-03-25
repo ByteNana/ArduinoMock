@@ -27,17 +27,24 @@ class AlarmClass {
   AlarmID_t timerRepeat(time_t seconds, OnTick_t callback) {
     if (_nextId >= MAX_ALARMS) return dtINVALID_ALARM_ID;
     AlarmID_t id = static_cast<AlarmID_t>(_nextId++);
-    _alarms[id] = {
-        callback, static_cast<unsigned long>(seconds) * 1000,
-        std::chrono::steady_clock::now() + std::chrono::seconds(seconds), true, true};
+    auto& a = _alarms[id];
+    a.callback = callback;
+    a.intervalMs = static_cast<unsigned long>(seconds) * 1000;
+    a.nextFire = std::chrono::steady_clock::now() + std::chrono::seconds(seconds);
+    a.enabled = true;
+    a.repeat = true;
     return id;
   }
 
   AlarmID_t timerOnce(time_t seconds, OnTick_t callback) {
     if (_nextId >= MAX_ALARMS) return dtINVALID_ALARM_ID;
     AlarmID_t id = static_cast<AlarmID_t>(_nextId++);
-    _alarms[id] = {
-        callback, 0, std::chrono::steady_clock::now() + std::chrono::seconds(seconds), true, false};
+    auto& a = _alarms[id];
+    a.callback = callback;
+    a.intervalMs = 0;
+    a.nextFire = std::chrono::steady_clock::now() + std::chrono::seconds(seconds);
+    a.enabled = true;
+    a.repeat = false;
     return id;
   }
 
@@ -51,7 +58,8 @@ class AlarmClass {
 
   bool free(AlarmID_t id) {
     if (id >= MAX_ALARMS) return false;
-    _alarms[id] = {};
+    _alarms[id].callback = nullptr;
+    _alarms[id].enabled = false;
     return true;
   }
 
@@ -65,7 +73,10 @@ class AlarmClass {
 
   void reset() {
     _nextId = 0;
-    for (auto& a : _alarms) a = {};
+    for (auto& a : _alarms) {
+      a.callback = nullptr;
+      a.enabled = false;
+    }
   }
 
  private:
