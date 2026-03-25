@@ -14,6 +14,17 @@ String File::readString() {
   return String(_contentPtr->c_str());
 }
 
+String File::readStringUntil(char terminator) {
+  if (!_contentPtr) return String("");
+  std::string result;
+  while (_readPos < _contentPtr->size()) {
+    char c = (*_contentPtr)[_readPos++];
+    if (c == terminator) break;
+    result += c;
+  }
+  return String(result.c_str());
+}
+
 size_t File::write(uint8_t c) {
   if (!_contentPtr) return 0;
   _contentPtr->push_back(static_cast<char>(c));

@@ -17,6 +17,7 @@ class File {
 
   operator bool() const;
   String readString();
+  String readStringUntil(char terminator);
   size_t write(uint8_t c);
   size_t write(const uint8_t* buf, size_t size);
   size_t print(const char* str);
