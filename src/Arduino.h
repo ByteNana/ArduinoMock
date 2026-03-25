@@ -21,6 +21,21 @@ typedef uint16_t word;
 #define OCT 8
 #define BIN 2
 
+// GPIO pin modes
+#ifndef INPUT
+#define INPUT 0x0
+#endif
+#ifndef OUTPUT
+#define OUTPUT 0x1
+#endif
+#ifndef INPUT_PULLUP
+#define INPUT_PULLUP 0x2
+#endif
+
+inline void pinMode(uint8_t /*pin*/, uint8_t /*mode*/) {}
+inline void digitalWrite(uint8_t /*pin*/, uint8_t /*val*/) {}
+inline int digitalRead(uint8_t /*pin*/) { return 0; }
+
 #include "Esp.h"
 #include "HardwareSerial.h"
 // Arduino math macros
