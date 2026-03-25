@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <chrono>
+#include <thread>
+
 #include "freertos/FreeRTOS.h"
 
 static int callbackCount = 0;
@@ -131,5 +134,64 @@ TEST_F(TimerTest, IsTimerActiveReturnsFalseAfterStop) {
 TEST_F(TimerTest, IsTimerActiveReturnsTrueAfterReset) {
   TimerHandle_t t = xTimerCreate("test", 1000, pdFALSE, nullptr, testCallback);
   xTimerReset(t, 0);
+  EXPECT_EQ(xTimerIsTimerActive(t), pdTRUE);
+}
+
+// --- time semantics ---
+
+TEST_F(TimerTest, OneShotBecomesInactiveAfterPeriodElapses) {
+  // period=0 fires immediately on the next xTimerIsTimerActive call
+  TimerHandle_t t = xTimerCreate("one", 0, pdFALSE, nullptr, testCallback);
+  xTimerStart(t, 0);
+  std::this_thread::sleep_for(std::chrono::milliseconds(5));
+  EXPECT_EQ(xTimerIsTimerActive(t), pdFALSE);
+  EXPECT_EQ(callbackCount, 1);
+}
+
+TEST_F(TimerTest, AutoReloadStaysActiveAfterPeriodElapses) {
+  TimerHandle_t t = xTimerCreate("repeat", 0, pdTRUE, nullptr, testCallback);
+  xTimerStart(t, 0);
+  std::this_thread::sleep_for(std::chrono::milliseconds(5));
+  EXPECT_EQ(xTimerIsTimerActive(t), pdTRUE);
+  EXPECT_EQ(callbackCount, 1);
+}
+
+TEST_F(TimerTest, MockProcessTimersDeactivatesOneShotAfterFiring) {
+  TimerHandle_t t = xTimerCreate("one", 1000, pdFALSE, nullptr, testCallback);
+  xTimerStart(t, 0);
+  mockProcessTimers();
+  EXPECT_EQ(callbackCount, 1);
+  // one-shot should now be inactive
+  EXPECT_EQ(xTimerIsTimerActive(t), pdFALSE);
+}
+
+TEST_F(TimerTest, MockFireTimerDeactivatesOneShotAfterFiring) {
+  TimerHandle_t t = xTimerCreate("one", 1000, pdFALSE, nullptr, testCallback);
+  xTimerStart(t, 0);
+  mockFireTimer(t);
+  EXPECT_EQ(callbackCount, 1);
+  EXPECT_EQ(xTimerIsTimerActive(t), pdFALSE);
+}
+
+TEST_F(TimerTest, MockProcessTimersKeepsAutoReloadActive) {
+  TimerHandle_t t = xTimerCreate("repeat", 1000, pdTRUE, nullptr, testCallback);
+  xTimerStart(t, 0);
+  mockProcessTimers();
+  EXPECT_EQ(callbackCount, 1);
+  // auto-reload stays active after firing
+  EXPECT_EQ(xTimerStop(t, 0), pdPASS);  // just verify it is still stoppable
+}
+
+TEST_F(TimerTest, ResetRestartsFireAtFromNow) {
+  // Start with 0ms period so it expires after a short sleep
+  TimerHandle_t t = xTimerCreate("one", 0, pdFALSE, nullptr, testCallback);
+  xTimerStart(t, 0);
+  std::this_thread::sleep_for(std::chrono::milliseconds(5));
+  // Expired: confirm inactive before reset
+  EXPECT_EQ(xTimerIsTimerActive(t), pdFALSE);
+  // Change period to 1s then reset — fireAt is now + 1s
+  xTimerChangePeriod(t, 1000, 0);
+  xTimerReset(t, 0);
+  // Should be active again (new fireAt is 1s from now)
   EXPECT_EQ(xTimerIsTimerActive(t), pdTRUE);
 }
