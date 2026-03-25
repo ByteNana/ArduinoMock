@@ -109,3 +109,27 @@ TEST_F(TimerTest, ResetReactivatesStoppedTimer) {
   mockProcessTimers();
   EXPECT_EQ(callbackCount, 1);
 }
+
+TEST_F(TimerTest, IsTimerActiveReturnsFalseAfterCreate) {
+  TimerHandle_t t = xTimerCreate("test", 1000, pdFALSE, nullptr, testCallback);
+  EXPECT_EQ(xTimerIsTimerActive(t), pdFALSE);
+}
+
+TEST_F(TimerTest, IsTimerActiveReturnsTrueAfterStart) {
+  TimerHandle_t t = xTimerCreate("test", 1000, pdFALSE, nullptr, testCallback);
+  xTimerStart(t, 0);
+  EXPECT_EQ(xTimerIsTimerActive(t), pdTRUE);
+}
+
+TEST_F(TimerTest, IsTimerActiveReturnsFalseAfterStop) {
+  TimerHandle_t t = xTimerCreate("test", 1000, pdFALSE, nullptr, testCallback);
+  xTimerStart(t, 0);
+  xTimerStop(t, 0);
+  EXPECT_EQ(xTimerIsTimerActive(t), pdFALSE);
+}
+
+TEST_F(TimerTest, IsTimerActiveReturnsTrueAfterReset) {
+  TimerHandle_t t = xTimerCreate("test", 1000, pdFALSE, nullptr, testCallback);
+  xTimerReset(t, 0);
+  EXPECT_EQ(xTimerIsTimerActive(t), pdTRUE);
+}
