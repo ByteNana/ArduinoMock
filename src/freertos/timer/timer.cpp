@@ -60,6 +60,11 @@ BaseType_t xTimerChangePeriod(TimerHandle_t timer, uint32_t newPeriod, TickType_
   return pdPASS;
 }
 
+BaseType_t xTimerIsTimerActive(TimerHandle_t timer) {
+  MockTimer* t = static_cast<MockTimer*>(timer);
+  return t->active ? pdTRUE : pdFALSE;
+}
+
 void* pvTimerGetTimerID(TimerHandle_t timer) {
   MockTimer* t = static_cast<MockTimer*>(timer);
   return t->timerID;
