@@ -32,31 +32,55 @@ size_t n = mockTimerCount(); // number of live timers
 mockTimerClear();            // delete all timers (use in tearDown)
 ```
 
-## Running the tests
-
-### Prerequisites
+## Prerequisites
 
 - CMake ≥ 3.15
 - A C11 compiler (GCC or Clang)
 - pthreads (standard on Linux and macOS)
+- [`just`](https://just.systems) — task runner
+- `clang-format` and `clang-tidy` (optional, for format/lint tasks)
 - Internet access on first build (CMake fetches [Unity](https://github.com/ThrowTheSwitch/Unity) automatically)
 
-### Build and run
+## Quick start
 
 ```bash
-# 1. Clone and switch to this branch
 git clone https://github.com/ByteNana/ArduinoMock.git
 cd ArduinoMock
 git checkout idf-mock
 
-# 2. Configure
-cmake -S . -B build -DBUILD_TESTING=ON
+just test
+```
 
-# 3. Build
+## Available tasks
+
+```
+just build            # Configure and build the library + test binaries
+just test             # Build and run all test suites
+just test-suite <name># Run a single suite: just test-suite test_queue
+just format           # Format all C source and header files in-place
+just format-check     # Check formatting (exits non-zero on violations)
+just lint             # Run clang-tidy and report issues
+just lint-check       # Run clang-tidy, exit non-zero on any warning
+just clean            # Remove the build directory
+```
+
+### Run without just
+
+```bash
+# Configure
+cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+# Build
 cmake --build build --parallel
 
-# 4. Run all tests
+# Run all tests
 ctest --test-dir build --output-on-failure
+
+# Run a single suite (verbose Unity output)
+./build/test/test_task
+./build/test/test_queue
+./build/test/test_semphr
+./build/test/test_timers
 ```
 
 Expected output:
@@ -73,21 +97,6 @@ Test project /path/to/build
 4/4 Test #4: test_timers ......................   Passed    0.02 sec
 
 100% tests passed, 0 tests failed out of 4
-```
-
-### Run a single test suite
-
-```bash
-ctest --test-dir build --output-on-failure -R test_queue
-```
-
-### Run a test binary directly (verbose Unity output)
-
-```bash
-./build/test/test_task
-./build/test/test_queue
-./build/test/test_semphr
-./build/test/test_timers
 ```
 
 ## Using the mock in your own code
@@ -114,6 +123,14 @@ Then include headers exactly as you would on the ESP32:
 
 ```
 idf-mock/
+├── .just/
+│   ├── build.just
+│   ├── test.just
+│   ├── lint.just
+│   └── format.just
+├── .clang-format
+├── .clang-tidy
+├── justfile
 ├── include/
 │   ├── freertos/
 │   │   ├── FreeRTOS.h
