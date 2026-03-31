@@ -9,8 +9,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(unity)
 
+# Plug in our GTest-style output via unity_config.h (only unity.c needs these)
+target_include_directories(unity PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(unity PRIVATE UNITY_INCLUDE_CONFIG_H)
+
 function(add_unity_test name src)
-    add_executable(${name} ${src})
+    add_executable(${name} ${src} ${CMAKE_CURRENT_SOURCE_DIR}/unity_gtest.c)
     target_link_libraries(${name} PRIVATE idf_mock unity pthread)
     target_include_directories(${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
     add_test(NAME ${name} COMMAND ${name})
