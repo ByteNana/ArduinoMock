@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [idf-mock]
+  pull_request:
+    branches: [idf-mock]
+
+jobs:
+  build:
+    name: Build + Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: "3.27"
+
+      - name: Configure
+        run: cmake -S . -B build -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
