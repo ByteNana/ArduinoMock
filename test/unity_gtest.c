@@ -131,7 +131,17 @@ void gtest_output_flush(void) { fflush(stdout); }
 /* ---- UNITY_OUTPUT_START ------------------------------------------------- */
 
 void gtest_output_start(void) {
-    printf(GRN BOLD "[----------]" RST "\n");
+    /* Extract suite name from TestFile (basename without extension). */
+    const char *file = Unity.TestFile ? Unity.TestFile : "";
+    const char *slash = strrchr(file, '/');
+    if (slash) file = slash + 1;
+    char suite[64];
+    strncpy(suite, file, sizeof(suite) - 1);
+    suite[sizeof(suite) - 1] = '\0';
+    char *dot = strrchr(suite, '.');
+    if (dot) *dot = '\0';
+
+    printf("\n" GRN BOLD "[----------]" RST " %s\n", suite);
     fflush(stdout);
 }
 
