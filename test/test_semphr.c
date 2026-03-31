@@ -44,7 +44,7 @@ void test_mutex_take_give_take(void) {
     xSemaphoreTake(s, 0);
     TEST_ASSERT_EQUAL(pdFALSE, xSemaphoreTake(s, 0)); /* locked */
     xSemaphoreGive(s);
-    TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(s, 0));  /* unlocked */
+    TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(s, 0)); /* unlocked */
     vSemaphoreDelete(s);
 }
 
@@ -86,7 +86,7 @@ void test_counting_take_below_zero_returns_false(void) {
 
 void test_give_from_isr_gives(void) {
     SemaphoreHandle_t s = xSemaphoreCreateBinary();
-    BaseType_t        woken;
+    BaseType_t woken;
     TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreGiveFromISR(s, &woken));
     TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(s, 0));
     vSemaphoreDelete(s);
@@ -94,20 +94,22 @@ void test_give_from_isr_gives(void) {
 
 /* --- blocking take (cross-thread) --- */
 
-typedef struct { SemaphoreHandle_t s; } GiveArg;
+typedef struct {
+    SemaphoreHandle_t s;
+} GiveArg;
 
 static void *giver_thread(void *arg) {
-    GiveArg           *ga = (GiveArg *)arg;
-    struct timespec ts    = { .tv_sec = 0, .tv_nsec = 20 * 1000000L };
+    GiveArg *ga        = (GiveArg *)arg;
+    struct timespec ts = {.tv_sec = 0, .tv_nsec = 20 * 1000000L};
     nanosleep(&ts, NULL);
     xSemaphoreGive(ga->s);
     return NULL;
 }
 
 void test_blocking_take_wakes_on_give(void) {
-    SemaphoreHandle_t s  = xSemaphoreCreateBinary();
-    GiveArg           ga = { s };
-    pthread_t         pt;
+    SemaphoreHandle_t s = xSemaphoreCreateBinary();
+    GiveArg ga          = {s};
+    pthread_t pt;
     pthread_create(&pt, NULL, giver_thread, &ga);
     TEST_ASSERT_EQUAL(pdTRUE, xSemaphoreTake(s, 200));
     pthread_join(pt, NULL);

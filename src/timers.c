@@ -9,22 +9,22 @@
 #define MAX_TIMERS 32
 
 typedef struct {
-    char                    name[16];
-    TickType_t              period;
-    int                     auto_reload;
-    int                     active;
-    void                   *timer_id;
+    char name[16];
+    TickType_t period;
+    int auto_reload;
+    int active;
+    void *timer_id;
     TimerCallbackFunction_t callback;
-    struct timespec         fire_at;
+    struct timespec fire_at;
 } TimerImpl;
 
-static TimerImpl      *s_timers[MAX_TIMERS];
-static size_t          s_count = 0;
-static pthread_mutex_t s_mtx   = PTHREAD_MUTEX_INITIALIZER;
+static TimerImpl *s_timers[MAX_TIMERS];
+static size_t s_count        = 0;
+static pthread_mutex_t s_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 static void set_fire_at(TimerImpl *t) {
     clock_gettime(CLOCK_MONOTONIC, &t->fire_at);
-    t->fire_at.tv_sec  += (time_t)(t->period / 1000u);
+    t->fire_at.tv_sec += (time_t)(t->period / 1000u);
     t->fire_at.tv_nsec += (long)(t->period % 1000u) * 1000000L;
     if (t->fire_at.tv_nsec >= 1000000000L) {
         t->fire_at.tv_sec++;
@@ -38,7 +38,7 @@ static int timespec_ge(const struct timespec *a, const struct timespec *b) {
 }
 
 TimerHandle_t xTimerCreate(const char *name, TickType_t period, BaseType_t auto_reload,
-                            void *timer_id, TimerCallbackFunction_t cb) {
+                           void *timer_id, TimerCallbackFunction_t cb) {
     TimerImpl *t = (TimerImpl *)calloc(1, sizeof(TimerImpl));
     if (!t) return NULL;
     strncpy(t->name, name ? name : "", sizeof(t->name) - 1);

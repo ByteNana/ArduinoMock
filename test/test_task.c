@@ -14,7 +14,7 @@ static volatile int g_ran = 0;
 
 static void task_set_flag(void *arg) {
     volatile int *flag = (volatile int *)arg;
-    *flag = 1;
+    *flag              = 1;
 }
 
 static void task_increment(void *arg) {
@@ -33,7 +33,7 @@ static void task_self_delete(void *arg) {
 void test_xTaskCreate_returns_pass(void) {
     volatile int flag = 0;
     TaskHandle_t h    = NULL;
-    BaseType_t   rc   = xTaskCreate(task_set_flag, "t1", 2048, (void *)&flag, 5, &h);
+    BaseType_t rc     = xTaskCreate(task_set_flag, "t1", 2048, (void *)&flag, 5, &h);
     TEST_ASSERT_EQUAL(pdPASS, rc);
     TEST_ASSERT_NOT_NULL(h);
     vTaskDelete(h);
@@ -49,7 +49,7 @@ void test_task_function_runs(void) {
 
 void test_null_handle_handle_is_optional(void) {
     volatile int flag = 0;
-    BaseType_t   rc   = xTaskCreate(task_set_flag, "t3", 2048, (void *)&flag, 5, NULL);
+    BaseType_t rc     = xTaskCreate(task_set_flag, "t3", 2048, (void *)&flag, 5, NULL);
     TEST_ASSERT_EQUAL(pdPASS, rc);
     vTaskDelay(20); /* give it time to finish */
 }
@@ -60,8 +60,7 @@ void test_vTaskDelay_outside_task(void) {
     clock_gettime(CLOCK_MONOTONIC, &t0);
     vTaskDelay(20);
     clock_gettime(CLOCK_MONOTONIC, &t1);
-    long elapsed_ms =
-        (t1.tv_sec - t0.tv_sec) * 1000L + (t1.tv_nsec - t0.tv_nsec) / 1000000L;
+    long elapsed_ms = (t1.tv_sec - t0.tv_sec) * 1000L + (t1.tv_nsec - t0.tv_nsec) / 1000000L;
     TEST_ASSERT_GREATER_OR_EQUAL(15, elapsed_ms); /* allow 25% slack */
 }
 

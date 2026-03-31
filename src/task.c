@@ -8,22 +8,22 @@
 #include <time.h>
 
 typedef struct {
-    pthread_t       thread;
+    pthread_t thread;
     pthread_mutex_t mtx;
-    pthread_cond_t  cv;
-    volatile int    cancel;
-    char            name[configMAX_TASK_NAME_LEN];
-    UBaseType_t     priority;
+    pthread_cond_t cv;
+    volatile int cancel;
+    char name[configMAX_TASK_NAME_LEN];
+    UBaseType_t priority;
 } TaskImpl;
 
 typedef struct {
-    TaskImpl      *impl;
+    TaskImpl *impl;
     TaskFunction_t fn;
-    void          *arg;
+    void *arg;
 } ThreadArg;
 
 /* Thread-local storage key for the current task */
-static pthread_key_t  s_tls_key;
+static pthread_key_t s_tls_key;
 static pthread_once_t s_tls_once = PTHREAD_ONCE_INIT;
 
 static void tls_key_create(void) { pthread_key_create(&s_tls_key, NULL); }
@@ -34,10 +34,10 @@ static TaskImpl *current_task(void) {
 }
 
 static void *task_thread_fn(void *raw) {
-    ThreadArg     *ta   = (ThreadArg *)raw;
-    TaskImpl      *impl = ta->impl;
-    TaskFunction_t fn   = ta->fn;
-    void          *arg  = ta->arg;
+    ThreadArg *ta     = (ThreadArg *)raw;
+    TaskImpl *impl    = ta->impl;
+    TaskFunction_t fn = ta->fn;
+    void *arg         = ta->arg;
     free(ta);
 
     pthread_once(&s_tls_once, tls_key_create);
@@ -51,7 +51,7 @@ static void *task_thread_fn(void *raw) {
 
 static void ms_to_abstime(uint32_t ms, struct timespec *ts) {
     clock_gettime(CLOCK_REALTIME, ts);
-    ts->tv_sec  += (time_t)(ms / 1000u);
+    ts->tv_sec += (time_t)(ms / 1000u);
     ts->tv_nsec += (long)(ms % 1000u) * 1000000L;
     if (ts->tv_nsec >= 1000000000L) {
         ts->tv_sec++;
@@ -59,8 +59,8 @@ static void ms_to_abstime(uint32_t ms, struct timespec *ts) {
     }
 }
 
-BaseType_t xTaskCreate(TaskFunction_t fn, const char *name, uint32_t stack_depth,
-                       void *params, UBaseType_t priority, TaskHandle_t *handle) {
+BaseType_t xTaskCreate(TaskFunction_t fn, const char *name, uint32_t stack_depth, void *params,
+                       UBaseType_t priority, TaskHandle_t *handle) {
     (void)stack_depth;
     pthread_once(&s_tls_once, tls_key_create);
 
@@ -160,6 +160,6 @@ TickType_t xTaskGetTickCount(void) {
     return (TickType_t)(ts.tv_sec * 1000UL + (uint32_t)(ts.tv_nsec / 1000000UL));
 }
 
-void   vTaskStartScheduler(void) {}
-void   vTaskEndScheduler(void) {}
+void vTaskStartScheduler(void) {}
+void vTaskEndScheduler(void) {}
 size_t xPortGetFreeHeapSize(void) { return 1024u * 1024u; }

@@ -9,19 +9,19 @@
 
 typedef struct {
     pthread_mutex_t mtx;
-    pthread_cond_t  cv_not_full;
-    pthread_cond_t  cv_not_empty;
-    UBaseType_t     capacity;
-    UBaseType_t     item_size;
-    UBaseType_t     count;
-    UBaseType_t     head; /* read index  */
-    UBaseType_t     tail; /* write index */
-    uint8_t        *buf;  /* capacity * item_size bytes */
+    pthread_cond_t cv_not_full;
+    pthread_cond_t cv_not_empty;
+    UBaseType_t capacity;
+    UBaseType_t item_size;
+    UBaseType_t count;
+    UBaseType_t head; /* read index  */
+    UBaseType_t tail; /* write index */
+    uint8_t *buf;     /* capacity * item_size bytes */
 } QueueCB;
 
 static void ms_to_abstime(uint32_t ms, struct timespec *ts) {
     clock_gettime(CLOCK_REALTIME, ts);
-    ts->tv_sec  += (time_t)(ms / 1000u);
+    ts->tv_sec += (time_t)(ms / 1000u);
     ts->tv_nsec += (long)(ms % 1000u) * 1000000L;
     if (ts->tv_nsec >= 1000000000L) {
         ts->tv_sec++;
@@ -34,7 +34,10 @@ QueueHandle_t xQueueCreate(UBaseType_t length, UBaseType_t item_size) {
     QueueCB *q = (QueueCB *)calloc(1, sizeof(QueueCB));
     if (!q) return NULL;
     q->buf = (uint8_t *)malloc((size_t)length * item_size);
-    if (!q->buf) { free(q); return NULL; }
+    if (!q->buf) {
+        free(q);
+        return NULL;
+    }
     q->capacity  = length;
     q->item_size = item_size;
     q->count = q->head = q->tail = 0;
@@ -54,8 +57,7 @@ void vQueueDelete(QueueHandle_t queue) {
     free(q);
 }
 
-static BaseType_t send_impl(QueueHandle_t queue, const void *item,
-                            TickType_t wait, int to_front) {
+static BaseType_t send_impl(QueueHandle_t queue, const void *item, TickType_t wait, int to_front) {
     QueueCB *q = (QueueCB *)queue;
     if (!q || !item) return pdFALSE;
 
@@ -64,11 +66,17 @@ static BaseType_t send_impl(QueueHandle_t queue, const void *item,
 
     pthread_mutex_lock(&q->mtx);
     while (q->count >= q->capacity) {
-        if (wait == 0) { pthread_mutex_unlock(&q->mtx); return pdFALSE; }
+        if (wait == 0) {
+            pthread_mutex_unlock(&q->mtx);
+            return pdFALSE;
+        }
         int rc = (wait == portMAX_DELAY)
                      ? pthread_cond_wait(&q->cv_not_full, &q->mtx)
                      : pthread_cond_timedwait(&q->cv_not_full, &q->mtx, &deadline);
-        if (rc == ETIMEDOUT) { pthread_mutex_unlock(&q->mtx); return pdFALSE; }
+        if (rc == ETIMEDOUT) {
+            pthread_mutex_unlock(&q->mtx);
+            return pdFALSE;
+        }
     }
 
     uint8_t *slot;
@@ -76,7 +84,7 @@ static BaseType_t send_impl(QueueHandle_t queue, const void *item,
         q->head = (q->head == 0) ? q->capacity - 1 : q->head - 1;
         slot    = q->buf + q->head * q->item_size;
     } else {
-        slot   = q->buf + q->tail * q->item_size;
+        slot    = q->buf + q->tail * q->item_size;
         q->tail = (q->tail + 1) % q->capacity;
     }
     memcpy(slot, item, q->item_size);
@@ -103,11 +111,17 @@ BaseType_t xQueueReceive(QueueHandle_t queue, void *buf, TickType_t wait) {
 
     pthread_mutex_lock(&q->mtx);
     while (q->count == 0) {
-        if (wait == 0) { pthread_mutex_unlock(&q->mtx); return pdFALSE; }
+        if (wait == 0) {
+            pthread_mutex_unlock(&q->mtx);
+            return pdFALSE;
+        }
         int rc = (wait == portMAX_DELAY)
                      ? pthread_cond_wait(&q->cv_not_empty, &q->mtx)
                      : pthread_cond_timedwait(&q->cv_not_empty, &q->mtx, &deadline);
-        if (rc == ETIMEDOUT) { pthread_mutex_unlock(&q->mtx); return pdFALSE; }
+        if (rc == ETIMEDOUT) {
+            pthread_mutex_unlock(&q->mtx);
+            return pdFALSE;
+        }
     }
     uint8_t *slot = q->buf + q->head * q->item_size;
     memcpy(buf, slot, q->item_size);

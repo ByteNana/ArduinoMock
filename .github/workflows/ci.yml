@@ -7,22 +7,54 @@ on:
     branches: [idf-mock]
 
 jobs:
-  build:
-    name: Build + Tests
+  format:
+    name: Format Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install just
+        uses: taiki-e/install-action@just
+
+      - name: Install clang-format
+        run: sudo apt-get install -y clang-format
+
+      - name: Check formatting
+        run: just format-check
+
+  lint:
+    name: Lint Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install just
+        uses: taiki-e/install-action@just
+
+      - name: Install dependencies
+        run: sudo apt-get install -y clang-tidy
 
       - name: Install CMake
         uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: "3.27"
 
-      - name: Configure
-        run: cmake -S . -B build -DBUILD_TESTING=ON
+      - name: Lint
+        run: just lint-check
 
-      - name: Build
-        run: cmake --build build --parallel
+  build-test:
+    name: Build + Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
+      - name: Install just
+        uses: taiki-e/install-action@just
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: "3.27"
+
+      - name: Build and test
+        run: just test

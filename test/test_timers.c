@@ -4,7 +4,7 @@
 
 #include "freertos/timers.h"
 
-static int g_fired = 0;
+static int g_fired                = 0;
 static TimerHandle_t g_last_timer = NULL;
 
 static void timer_cb(TimerHandle_t t) {
@@ -33,8 +33,8 @@ void test_pcTimerGetName(void) {
 }
 
 void test_pvTimerGetTimerID(void) {
-    int           id = 99;
-    TimerHandle_t t  = xTimerCreate("t", 1000, pdFALSE, &id, timer_cb);
+    int id          = 99;
+    TimerHandle_t t = xTimerCreate("t", 1000, pdFALSE, &id, timer_cb);
     TEST_ASSERT_EQUAL_PTR(&id, pvTimerGetTimerID(t));
 }
 
@@ -78,7 +78,7 @@ void test_timer_active_after_reset(void) {
 void test_oneshot_deactivates_after_period(void) {
     TimerHandle_t t = xTimerCreate("one", 0, pdFALSE, NULL, timer_cb);
     xTimerStart(t, 0);
-    struct timespec ts = { .tv_sec = 0, .tv_nsec = 5 * 1000000L };
+    struct timespec ts = {.tv_sec = 0, .tv_nsec = 5 * 1000000L};
     nanosleep(&ts, NULL);
     TEST_ASSERT_EQUAL(pdFALSE, xTimerIsTimerActive(t));
     TEST_ASSERT_EQUAL(1, g_fired);
@@ -87,7 +87,7 @@ void test_oneshot_deactivates_after_period(void) {
 void test_autoreload_stays_active_after_period(void) {
     TimerHandle_t t = xTimerCreate("rep", 0, pdTRUE, NULL, timer_cb);
     xTimerStart(t, 0);
-    struct timespec ts = { .tv_sec = 0, .tv_nsec = 5 * 1000000L };
+    struct timespec ts = {.tv_sec = 0, .tv_nsec = 5 * 1000000L};
     nanosleep(&ts, NULL);
     TEST_ASSERT_EQUAL(pdTRUE, xTimerIsTimerActive(t));
     TEST_ASSERT_EQUAL(1, g_fired);
@@ -96,7 +96,7 @@ void test_autoreload_stays_active_after_period(void) {
 void test_reset_restarts_period(void) {
     TimerHandle_t t = xTimerCreate("one", 0, pdFALSE, NULL, timer_cb);
     xTimerStart(t, 0);
-    struct timespec ts = { .tv_sec = 0, .tv_nsec = 5 * 1000000L };
+    struct timespec ts = {.tv_sec = 0, .tv_nsec = 5 * 1000000L};
     nanosleep(&ts, NULL);
     TEST_ASSERT_EQUAL(pdFALSE, xTimerIsTimerActive(t));
     /* reset with long period — should become active again */

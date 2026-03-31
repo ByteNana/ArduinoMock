@@ -19,15 +19,13 @@ void test_xQueueCreate_zero_length_returns_null(void) {
     TEST_ASSERT_NULL(xQueueCreate(0, sizeof(int)));
 }
 
-void test_xQueueCreate_zero_item_size_returns_null(void) {
-    TEST_ASSERT_NULL(xQueueCreate(4, 0));
-}
+void test_xQueueCreate_zero_item_size_returns_null(void) { TEST_ASSERT_NULL(xQueueCreate(4, 0)); }
 
 /* --- send / receive --- */
 
 void test_send_and_receive_single_item(void) {
-    QueueHandle_t q   = xQueueCreate(4, sizeof(int));
-    int           val = 42;
+    QueueHandle_t q = xQueueCreate(4, sizeof(int));
+    int val         = 42;
     TEST_ASSERT_EQUAL(pdTRUE, xQueueSend(q, &val, 0));
     int out = 0;
     TEST_ASSERT_EQUAL(pdTRUE, xQueueReceive(q, &out, 0));
@@ -48,7 +46,7 @@ void test_fifo_ordering(void) {
 
 void test_send_to_front_prepends(void) {
     QueueHandle_t q = xQueueCreate(4, sizeof(int));
-    int           a = 1, b = 2;
+    int a = 1, b = 2;
     xQueueSend(q, &a, 0);
     xQueueSendToFront(q, &b, 0);
     int out;
@@ -61,7 +59,7 @@ void test_send_to_front_prepends(void) {
 
 void test_send_to_full_queue_with_zero_wait_returns_false(void) {
     QueueHandle_t q = xQueueCreate(2, sizeof(int));
-    int           v = 1;
+    int v           = 1;
     xQueueSend(q, &v, 0);
     xQueueSend(q, &v, 0);
     TEST_ASSERT_EQUAL(pdFALSE, xQueueSend(q, &v, 0));
@@ -70,7 +68,7 @@ void test_send_to_full_queue_with_zero_wait_returns_false(void) {
 
 void test_receive_from_empty_queue_with_zero_wait_returns_false(void) {
     QueueHandle_t q = xQueueCreate(4, sizeof(int));
-    int           out;
+    int out;
     TEST_ASSERT_EQUAL(pdFALSE, xQueueReceive(q, &out, 0));
     vQueueDelete(q);
 }
@@ -98,7 +96,7 @@ void test_uxQueueSpacesAvailable(void) {
 
 void test_xQueueReset_clears_items(void) {
     QueueHandle_t q = xQueueCreate(4, sizeof(int));
-    int           v = 1;
+    int v           = 1;
     xQueueSend(q, &v, 0);
     xQueueSend(q, &v, 0);
     xQueueReset(q);
@@ -108,20 +106,23 @@ void test_xQueueReset_clears_items(void) {
 
 /* --- blocking receive (cross-thread) --- */
 
-typedef struct { QueueHandle_t q; int val; } SendArg;
+typedef struct {
+    QueueHandle_t q;
+    int val;
+} SendArg;
 
 static void *sender_thread(void *arg) {
-    SendArg *sa = (SendArg *)arg;
-    struct timespec ts = { .tv_sec = 0, .tv_nsec = 20 * 1000000L };
+    SendArg *sa        = (SendArg *)arg;
+    struct timespec ts = {.tv_sec = 0, .tv_nsec = 20 * 1000000L};
     nanosleep(&ts, NULL); /* slight delay so receiver blocks first */
     xQueueSend(sa->q, &sa->val, portMAX_DELAY);
     return NULL;
 }
 
 void test_blocking_receive_wakes_on_send(void) {
-    QueueHandle_t q      = xQueueCreate(1, sizeof(int));
-    SendArg       sa     = { q, 77 };
-    pthread_t     sender;
+    QueueHandle_t q = xQueueCreate(1, sizeof(int));
+    SendArg sa      = {q, 77};
+    pthread_t sender;
     pthread_create(&sender, NULL, sender_thread, &sa);
     int out = 0;
     TEST_ASSERT_EQUAL(pdTRUE, xQueueReceive(q, &out, 200));
