@@ -21,7 +21,7 @@ typedef uint16_t word;
 #define OCT 8
 #define BIN 2
 
-// GPIO pin modes
+// GPIO pin modes and levels
 #ifndef INPUT
 #define INPUT 0x0
 #endif
@@ -32,9 +32,91 @@ typedef uint16_t word;
 #define INPUT_PULLUP 0x2
 #endif
 
+#ifndef LOW
+#define LOW 0
+#endif
+#ifndef HIGH
+#define HIGH 1
+#endif
+
+// Interrupt trigger modes
+#ifndef CHANGE
+#define CHANGE 2
+#endif
+#ifndef RISING
+#define RISING 3
+#endif
+#ifndef FALLING
+#define FALLING 4
+#endif
+
+#include <functional>
+#include <unordered_map>
+
+namespace mock {
+
+struct IsrEntry {
+  std::function<void()> callback;
+  uint8_t mode;
+};
+
+inline uint8_t* pin_state() {
+  static uint8_t s[256] = {};
+  return s;
+}
+
+inline std::unordered_map<uint8_t, IsrEntry>& isr_table() {
+  static std::unordered_map<uint8_t, IsrEntry> t;
+  return t;
+}
+
+}  // namespace mock
+
 inline void pinMode(uint8_t /*pin*/, uint8_t /*mode*/) {}
-inline void digitalWrite(uint8_t /*pin*/, uint8_t /*val*/) {}
-inline int digitalRead(uint8_t /*pin*/) { return 0; }
+inline void digitalWrite(uint8_t pin, uint8_t val) { mock::pin_state()[pin] = val; }
+inline int digitalRead(uint8_t pin) { return mock::pin_state()[pin]; }
+
+inline void attachInterrupt(uint8_t pin, std::function<void()> isr, uint8_t mode) {
+  mock::isr_table()[pin] = {std::move(isr), mode};
+}
+inline void detachInterrupt(uint8_t pin) { mock::isr_table().erase(pin); }
+inline uint8_t digitalPinToInterrupt(uint8_t pin) { return pin; }
+
+/// Set a pin's logic level and fire any registered ISR according to its mode.
+/// Use this from tests or a simulator to inject physical pin events.
+inline void mockSetPinState(uint8_t pin, uint8_t value) {
+  uint8_t prev = mock::pin_state()[pin];
+  mock::pin_state()[pin] = value;
+
+  auto it = mock::isr_table().find(pin);
+  if (it == mock::isr_table().end()) return;
+
+  const auto& entry = it->second;
+  bool fire = false;
+  switch (entry.mode) {
+    case CHANGE:
+      fire = (prev != value);
+      break;
+    case RISING:
+      fire = (prev == LOW && value == HIGH);
+      break;
+    case FALLING:
+      fire = (prev == HIGH && value == LOW);
+      break;
+    case LOW:
+      fire = (value == LOW);
+      break;
+    default:
+      break;
+  }
+  if (fire && entry.callback) entry.callback();
+}
+
+/// Reset all pin states and clear the interrupt table. Call in SetUp().
+inline void mockResetGpio() {
+  std::fill(mock::pin_state(), mock::pin_state() + 256, 0);
+  mock::isr_table().clear();
+}
 
 #include "Esp.h"
 #include "HardwareSerial.h"
