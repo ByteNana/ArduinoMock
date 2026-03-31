@@ -55,4 +55,7 @@ TEST(GpioConstants, PinModeDoesNotThrow) { EXPECT_NO_THROW(pinMode(4, OUTPUT)); 
 
 TEST(GpioConstants, DigitalWriteDoesNotThrow) { EXPECT_NO_THROW(digitalWrite(4, 1)); }
 
-TEST(GpioConstants, DigitalReadReturnsZero) { EXPECT_EQ(digitalRead(4), 0); }
+TEST(GpioConstants, DigitalReadReturnsZero) {
+  mockResetGpio();
+  EXPECT_EQ(0, digitalRead(4));
+}

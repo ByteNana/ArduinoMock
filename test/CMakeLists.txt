@@ -23,6 +23,7 @@ if(ENABLE_GTEST_TESTS)
     add_test(NAME ${name} COMMAND ${name})
   endfunction()
 
+  add_gtest(gpio_interrupt_gtest gpio_interrupt_gtest.cpp)
   add_gtest(queue_gtest queue_gtest.cpp)
   add_gtest(semaphore_gtest semaphore_gtest.cpp)
   add_gtest(task_gtest task_gtest.cpp)
