@@ -15,6 +15,24 @@ BaseType_t xTimerChangePeriod(TimerHandle_t timer, TickType_t new_period, TickTy
 void *pvTimerGetTimerID(TimerHandle_t timer);
 const char *pcTimerGetName(TimerHandle_t timer);
 
+/* ISR-safe variants — on native, delegate to the standard functions.
+ * The pxHigherPriorityTaskWoken out-param is ignored (no preemption). */
+static inline BaseType_t xTimerStartFromISR(TimerHandle_t timer,
+                                            BaseType_t *pxHigherPriorityTaskWoken) {
+    (void)pxHigherPriorityTaskWoken;
+    return xTimerStart(timer, 0);
+}
+static inline BaseType_t xTimerStopFromISR(TimerHandle_t timer,
+                                           BaseType_t *pxHigherPriorityTaskWoken) {
+    (void)pxHigherPriorityTaskWoken;
+    return xTimerStop(timer, 0);
+}
+static inline BaseType_t xTimerResetFromISR(TimerHandle_t timer,
+                                            BaseType_t *pxHigherPriorityTaskWoken) {
+    (void)pxHigherPriorityTaskWoken;
+    return xTimerReset(timer, 0);
+}
+
 /* Test helpers */
 void mockTimerProcess(void);
 void mockTimerFire(TimerHandle_t timer);
