@@ -148,7 +148,6 @@ inline long map(long x, long in_min, long in_max, long out_min, long out_max) {
 }
 
 // Flash-string helpers — no-ops on native
-class __FlashStringHelper;
 #ifndef PSTR
 #define PSTR(s) (s)
 #endif
@@ -156,8 +155,8 @@ class __FlashStringHelper;
 #define F(s) (reinterpret_cast<const __FlashStringHelper*>(PSTR(s)))
 #endif
 
+#include "Print.h"
 #include "Stream.h"
-using Print = Stream;
 #include "TimeLib.h"
 #include "WString.h"
 #include "Wire.h"

@@ -1,8 +1,6 @@
 #pragma once
 
-#include <cstdarg>
 #include <cstdint>
-#include <cstdio>
 #include <mutex>
 #include <queue>
 #include <string>
@@ -44,16 +42,6 @@ class HardwareSerial : public Stream {
   }
 
   void end() { reset(); }
-
-  size_t printf(const char* format, ...) {
-    char buf[256];
-    va_list args;
-    va_start(args, format);
-    int len = vsnprintf(buf, sizeof(buf), format, args);
-    va_end(args);
-    if (len <= 0) return 0;
-    return write(reinterpret_cast<const uint8_t*>(buf), static_cast<size_t>(len));
-  }
 
   unsigned long baudRate() const { return _baud; }
 

@@ -60,32 +60,73 @@ TEST(GpioConstants, DigitalReadReturnsZero) {
   EXPECT_EQ(0, digitalRead(4));
 }
 
-// --- Print alias ---
+// --- Print class ---
 
 namespace {
 struct TestPrinter : Print {
   std::string buf;
-  int available() override { return 0; }
-  int read() override { return -1; }
-  int peek() override { return -1; }
-  void flush() override {}
   size_t write(uint8_t b) override {
     buf += static_cast<char>(b);
     return 1;
   }
-  size_t write(const uint8_t* data, size_t size) override {
-    buf.append(reinterpret_cast<const char*>(data), size);
-    return size;
-  }
 };
 }  // namespace
 
-TEST(PrintAlias, InheritsFromStream) {
+TEST(PrintClass, IsDistinctFromStream) {
+  static_assert(!std::is_same<Print, Stream>::value, "Print and Stream must be distinct");
+  static_assert(std::is_base_of<Print, Stream>::value, "Stream must derive from Print");
+}
+
+TEST(PrintClass, CanInheritWithoutStreamObligations) {
+  // Print only requires write(uint8_t) — no available/read/peek needed
   TestPrinter p;
   p.print(String("hello"));
   EXPECT_EQ(p.buf, "hello");
 }
 
-TEST(PrintAlias, PrintAliasIsSameAsStream) {
-  static_assert(std::is_same<Print, Stream>::value, "Print must be an alias for Stream");
+TEST(PrintClass, PrintChar) {
+  TestPrinter p;
+  p.print('A');
+  EXPECT_EQ(p.buf, "A");
+}
+
+TEST(PrintClass, PrintIntDecimal) {
+  TestPrinter p;
+  p.print(-42, 10);
+  EXPECT_EQ(p.buf, "-42");
+}
+
+TEST(PrintClass, PrintUnsignedLongHex) {
+  TestPrinter p;
+  p.print(255UL, 16);
+  EXPECT_EQ(p.buf, "FF");
+}
+
+TEST(PrintClass, PrintUnsignedLongBinary) {
+  TestPrinter p;
+  p.print(5UL, 2);
+  EXPECT_EQ(p.buf, "101");
+}
+
+TEST(PrintClass, PrintDouble) {
+  TestPrinter p;
+  p.print(3.14, 2);
+  EXPECT_EQ(p.buf, "3.14");
+}
+
+TEST(PrintClass, Println) {
+  TestPrinter p;
+  p.println("hi");
+  EXPECT_EQ(p.buf, "hi\r\n");
+}
+
+TEST(PrintClass, Printf) {
+  TestPrinter p;
+  p.printf("val=%d", 7);
+  EXPECT_EQ(p.buf, "val=7");
+}
+
+TEST(PrintClass, FlushIsNonPureAndNoOp) {
+  TestPrinter p;
+  EXPECT_NO_THROW(p.flush());
 }
