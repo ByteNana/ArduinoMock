@@ -145,6 +145,38 @@ TEST(HardwareSerialTest, InstancesAreIndependent) {
   EXPECT_EQ(s1.available(), 7);
 }
 
+// --- print with numeric base ---
+
+TEST(HardwareSerialTest, PrintUnsignedDecimal) {
+  HardwareSerial s(0);
+  s.print(42u, DEC);
+  EXPECT_EQ(s.getTxData(), "42");
+}
+
+TEST(HardwareSerialTest, PrintUnsignedHex) {
+  HardwareSerial s(0);
+  s.print(255u, HEX);
+  EXPECT_EQ(s.getTxData(), "FF");
+}
+
+TEST(HardwareSerialTest, PrintUnsignedLongOctal) {
+  HardwareSerial s(0);
+  s.print(8ul, OCT);
+  EXPECT_EQ(s.getTxData(), "10");
+}
+
+TEST(HardwareSerialTest, PrintNegativeSignedDecimal) {
+  HardwareSerial s(0);
+  s.print(-1, DEC);
+  EXPECT_EQ(s.getTxData(), "-1");
+}
+
+TEST(HardwareSerialTest, PrintSignedHex) {
+  HardwareSerial s(0);
+  s.print(255, HEX);
+  EXPECT_EQ(s.getTxData(), "FF");
+}
+
 // --- global instances ---
 
 TEST(HardwareSerialTest, GlobalSerialInstances) {
