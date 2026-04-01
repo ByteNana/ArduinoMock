@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "Arduino.h"
 #include "FS.h"
 #include "LittleFS.h"
 #include "SPIFFS.h"
@@ -169,4 +170,91 @@ TEST_F(SPIFFSTest, FSHeaderIncludeCompiles) {
 TEST_F(SPIFFSTest, LittleFSBeginFormatOnFailReturnsTrue) {
   LittleFS.reset();
   EXPECT_TRUE(LittleFS.begin(true));
+}
+
+// --- end() ---
+
+TEST_F(SPIFFSTest, EndSetsMountedFalse) {
+  EXPECT_TRUE(SPIFFS.begin());
+  SPIFFS.end();
+  EXPECT_FALSE(SPIFFS.begin());
+}
+
+// --- begin(bool, const char*, uint8_t) ---
+
+TEST_F(SPIFFSTest, ThreeArgBeginReturnsTrue) { EXPECT_TRUE(SPIFFS.begin(false, "/spiffs", 10)); }
+
+TEST_F(SPIFFSTest, ThreeArgBeginRespectsMountedState) {
+  SPIFFS.setMounted(false);
+  EXPECT_FALSE(SPIFFS.begin(false, "/spiffs", 10));
+}
+
+// --- open(String) ---
+
+TEST_F(SPIFFSTest, OpenWithStringPath) {
+  SPIFFS.addFile("/cfg.json", "{}");
+  File f = SPIFFS.open(String("/cfg.json"), FILE_READ);
+  EXPECT_TRUE(static_cast<bool>(f));
+  EXPECT_STREQ(f.readString().c_str(), "{}");
+}
+
+TEST_F(SPIFFSTest, OpenWithStringPathWriteMode) {
+  File f = SPIFFS.open(String("/new.txt"), FILE_WRITE);
+  EXPECT_TRUE(static_cast<bool>(f));
+  f.print("data");
+  f.close();
+  EXPECT_STREQ(SPIFFS.getFile("/new.txt").c_str(), "data");
+}
+
+// --- exists(String) ---
+
+TEST_F(SPIFFSTest, ExistsWithStringPath) {
+  SPIFFS.addFile("/x.txt", "");
+  EXPECT_TRUE(SPIFFS.exists(String("/x.txt")));
+  EXPECT_FALSE(SPIFFS.exists(String("/y.txt")));
+}
+
+// --- remove(String) ---
+
+TEST_F(SPIFFSTest, RemoveWithStringPath) {
+  SPIFFS.addFile("/del.txt", "bye");
+  EXPECT_TRUE(SPIFFS.remove(String("/del.txt")));
+  EXPECT_FALSE(SPIFFS.exists("/del.txt"));
+}
+
+// --- File::print(String) / println(String) ---
+
+TEST_F(SPIFFSTest, FilePrintString) {
+  File f = SPIFFS.open("/s.txt", FILE_WRITE);
+  f.print(String("hello"));
+  f.close();
+  EXPECT_STREQ(SPIFFS.getFile("/s.txt").c_str(), "hello");
+}
+
+TEST_F(SPIFFSTest, FilePrintlnString) {
+  File f = SPIFFS.open("/sl.txt", FILE_WRITE);
+  f.println(String("hello"));
+  f.close();
+  EXPECT_STREQ(SPIFFS.getFile("/sl.txt").c_str(), "hello\n");
+}
+
+// --- File::openNextFile() ---
+
+TEST_F(SPIFFSTest, OpenNextFileReturnsInvalidFile) {
+  SPIFFS.addFile("/dir/", "");
+  File dir = SPIFFS.open("/dir/", FILE_READ);
+  File entry = dir.openNextFile();
+  EXPECT_FALSE(static_cast<bool>(entry));
+}
+
+// --- F() / PSTR() ---
+
+TEST_F(SPIFFSTest, PSTRMacroIsIdentity) {
+  const char* s = PSTR("hello");
+  EXPECT_STREQ(s, "hello");
+}
+
+TEST_F(SPIFFSTest, FMacroCompilesAndPassesThrough) {
+  const __FlashStringHelper* fstr = F("world");
+  EXPECT_STREQ(reinterpret_cast<const char*>(fstr), "world");
 }

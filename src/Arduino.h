@@ -147,6 +147,15 @@ inline long map(long x, long in_min, long in_max, long out_min, long out_max) {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+// Flash-string helpers — no-ops on native
+class __FlashStringHelper;
+#ifndef PSTR
+#define PSTR(s) (s)
+#endif
+#ifndef F
+#define F(s) (reinterpret_cast<const __FlashStringHelper*>(PSTR(s)))
+#endif
+
 #include "Stream.h"
 #include "TimeLib.h"
 #include "WString.h"

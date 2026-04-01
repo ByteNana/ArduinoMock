@@ -22,9 +22,12 @@ class File {
   size_t write(const uint8_t* buf, size_t size);
   size_t print(const char* str);
   size_t println(const char* str);
+  size_t print(const String& str);
+  size_t println(const String& str);
   int read();
   int peek();
   int available();
+  File openNextFile();
   String name();
   size_t size();
   void close();
@@ -40,9 +43,14 @@ class File {
 class MockSPIFFS {
  public:
   bool begin(bool formatOnFail = false);
+  bool begin(bool formatOnFail, const char* basePath, uint8_t maxFiles = 10);
+  void end();
   File open(const char* path, const char* mode = FILE_READ);
+  File open(const String& path, const char* mode = FILE_READ);
   bool exists(const char* path);
+  bool exists(const String& path);
   bool remove(const char* path);
+  bool remove(const String& path);
   bool rename(const char* from, const char* to);
 
   // Test helpers
