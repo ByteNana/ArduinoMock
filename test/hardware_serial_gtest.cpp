@@ -211,3 +211,93 @@ TEST(HardwareSerialTest, GlobalSerialInstances) {
   Serial2.reset();
   Serial3.reset();
 }
+
+// --- Stream read methods ---
+
+TEST(StreamReadTest, SetAndGetTimeout) {
+  HardwareSerial s(0);
+  s.setTimeout(500);
+  EXPECT_EQ(s.getTimeout(), 500UL);
+}
+
+TEST(StreamReadTest, ReadBytesReadsAvailableData) {
+  HardwareSerial s(0);
+  s.setTimeout(0);
+  s.injectRxData("hello");
+  char buf[8] = {};
+  size_t n = s.readBytes(buf, 5);
+  EXPECT_EQ(n, 5u);
+  EXPECT_STREQ(buf, "hello");
+}
+
+TEST(StreamReadTest, ReadBytesStopsAtLength) {
+  HardwareSerial s(0);
+  s.setTimeout(0);
+  s.injectRxData("abcdef");
+  char buf[8] = {};
+  size_t n = s.readBytes(buf, 3);
+  EXPECT_EQ(n, 3u);
+  EXPECT_EQ(buf[0], 'a');
+  EXPECT_EQ(buf[2], 'c');
+}
+
+TEST(StreamReadTest, ReadBytesUntilStopsAtTerminator) {
+  HardwareSerial s(0);
+  s.setTimeout(0);
+  s.injectRxData("hello\nworld");
+  char buf[16] = {};
+  size_t n = s.readBytesUntil('\n', buf, sizeof(buf) - 1);
+  EXPECT_EQ(n, 5u);
+  EXPECT_STREQ(buf, "hello");
+}
+
+TEST(StreamReadTest, ReadBytesUntilStopsAtLength) {
+  HardwareSerial s(0);
+  s.setTimeout(0);
+  s.injectRxData("abcdef");
+  char buf[4] = {};
+  size_t n = s.readBytesUntil('|', buf, 3);
+  EXPECT_EQ(n, 3u);
+}
+
+TEST(StreamReadTest, ParseIntPositive) {
+  HardwareSerial s(0);
+  s.setTimeout(0);
+  s.injectRxData("42");
+  EXPECT_EQ(s.parseInt(), 42L);
+}
+
+TEST(StreamReadTest, ParseIntNegative) {
+  HardwareSerial s(0);
+  s.setTimeout(0);
+  s.injectRxData("-17");
+  EXPECT_EQ(s.parseInt(), -17L);
+}
+
+TEST(StreamReadTest, ParseIntSkipsLeadingNonDigits) {
+  HardwareSerial s(0);
+  s.setTimeout(0);
+  s.injectRxData("abc123");
+  EXPECT_EQ(s.parseInt(), 123L);
+}
+
+TEST(StreamReadTest, ParseFloatPositive) {
+  HardwareSerial s(0);
+  s.setTimeout(0);
+  s.injectRxData("3.14");
+  EXPECT_NEAR(s.parseFloat(), 3.14f, 0.001f);
+}
+
+TEST(StreamReadTest, ParseFloatNegative) {
+  HardwareSerial s(0);
+  s.setTimeout(0);
+  s.injectRxData("-2.5");
+  EXPECT_NEAR(s.parseFloat(), -2.5f, 0.001f);
+}
+
+TEST(StreamReadTest, ParseFloatInteger) {
+  HardwareSerial s(0);
+  s.setTimeout(0);
+  s.injectRxData("7");
+  EXPECT_NEAR(s.parseFloat(), 7.0f, 0.001f);
+}
