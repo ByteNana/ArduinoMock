@@ -30,3 +30,15 @@ TEST(UpdaterTest, GlobalUpdateInstanceIsAccessible) {
   UpdateClass* ptr = &Update;
   EXPECT_NE(ptr, nullptr);
 }
+
+TEST(UpdaterTest, UFlashAndUSpiffsDefined) {
+  EXPECT_EQ(U_FLASH, 0);
+  EXPECT_EQ(U_SPIFFS, 100);
+}
+
+TEST(UpdaterTest, BeginWithCommand) {
+  EXPECT_FALSE(Update.begin(1024, U_FLASH));
+  EXPECT_FALSE(Update.begin(1024, U_SPIFFS));
+}
+
+TEST(UpdaterTest, GetErrorReturnsZero) { EXPECT_EQ(Update.getError(), static_cast<uint8_t>(0)); }
