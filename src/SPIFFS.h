@@ -22,9 +22,12 @@ class File {
   size_t write(const uint8_t* buf, size_t size);
   size_t print(const char* str);
   size_t println(const char* str);
+  size_t print(const String& str);
+  size_t println(const String& str);
   int read();
   int peek();
   int available();
+  File openNextFile();
   String name();
   size_t size();
   void close();
@@ -40,24 +43,31 @@ class File {
 class MockSPIFFS {
  public:
   bool begin(bool formatOnFail = false);
+  bool begin(bool formatOnFail, const char* basePath, uint8_t maxFiles = 10);
+  void end();
   File open(const char* path, const char* mode = FILE_READ);
+  File open(const String& path, const char* mode = FILE_READ);
   bool exists(const char* path);
+  bool exists(const String& path);
   bool remove(const char* path);
+  bool remove(const String& path);
   bool rename(const char* from, const char* to);
 
   // Test helpers
-  void setMounted(bool v) { _mounted = v; }
+  void setMounted(bool v) { _canMount = v; }
   void addFile(const char* path, const std::string& content) { _files[path] = content; }
   std::string getFile(const char* path) { return _files.count(path) ? _files[path] : ""; }
   void clear() { _files.clear(); }
   void reset() {
     _files.clear();
-    _mounted = true;
+    _mounted = false;
+    _canMount = true;
   }
 
  private:
   std::map<std::string, std::string> _files;
-  bool _mounted = true;
+  bool _mounted = false;
+  bool _canMount = true;
   friend class File;
 };
 

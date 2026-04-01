@@ -69,6 +69,12 @@ int File::available() {
   return static_cast<int>(_contentPtr->size() - _readPos);
 }
 
+size_t File::print(const String& str) { return print(str.c_str()); }
+
+size_t File::println(const String& str) { return println(str.c_str()); }
+
+File File::openNextFile() { return File(); }
+
 String File::name() { return String(_name.c_str()); }
 
 size_t File::size() { return _contentPtr ? _contentPtr->size() : 0; }
@@ -80,7 +86,14 @@ void File::close() {
 
 // --- MockSPIFFS implementation ---
 
-bool MockSPIFFS::begin(bool) { return _mounted; }
+bool MockSPIFFS::begin(bool) {
+  if (_canMount) _mounted = true;
+  return _canMount;
+}
+
+bool MockSPIFFS::begin(bool formatOnFail, const char*, uint8_t) { return begin(formatOnFail); }
+
+void MockSPIFFS::end() { _mounted = false; }
 
 File MockSPIFFS::open(const char* path, const char* mode) {
   std::string m = mode ? mode : FILE_READ;
@@ -102,11 +115,17 @@ File MockSPIFFS::open(const char* path, const char* mode) {
 
 bool MockSPIFFS::exists(const char* path) { return _files.count(path) > 0; }
 
+bool MockSPIFFS::exists(const String& path) { return exists(path.c_str()); }
+
+File MockSPIFFS::open(const String& path, const char* mode) { return open(path.c_str(), mode); }
+
 bool MockSPIFFS::remove(const char* path) {
   if (!_files.count(path)) return false;
   _files.erase(path);
   return true;
 }
+
+bool MockSPIFFS::remove(const String& path) { return remove(path.c_str()); }
 
 bool MockSPIFFS::rename(const char* from, const char* to) {
   if (!_files.count(from)) return false;
