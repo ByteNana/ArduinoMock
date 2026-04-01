@@ -80,3 +80,19 @@ TEST(StringBaseTest, BinaryFormatting) { EXPECT_EQ(String(255UL, BIN), "11111111
 TEST(StringBaseTest, OctalFormatting) { EXPECT_EQ(String(8UL, OCT), "10"); }
 
 TEST(StringBaseTest, DecimalFormatting) { EXPECT_EQ(String(42UL, DEC), "42"); }
+
+TEST(ProgmemTest, PGMREADByteIsIdentity) {
+  const uint8_t arr[] PROGMEM = {0x42};
+  EXPECT_EQ(pgm_read_byte(&arr[0]), 0x42);
+}
+TEST(ProgmemTest, PGMREADWordIsIdentity) {
+  const uint16_t arr[] PROGMEM = {0xBEEF};
+  EXPECT_EQ(pgm_read_word(&arr[0]), 0xBEEFu);
+}
+TEST(ProgmemTest, PGMREADWordFromUint8Unaligned) {
+  const uint8_t arr[] PROGMEM = {0xEF, 0xBE, 0xFE, 0xCA};
+  EXPECT_EQ(pgm_read_word(reinterpret_cast<const void*>(&arr[0])), 0xBEEFu);
+  EXPECT_EQ(pgm_read_word(reinterpret_cast<const void*>(&arr[1])), 0xFEBEu);
+}
+TEST(AnalogTest, AnalogReadReturnsZero) { EXPECT_EQ(analogRead(0), 0); }
+TEST(AnalogTest, AnalogWriteCompiles) { EXPECT_NO_THROW(analogWrite(0, 128)); }

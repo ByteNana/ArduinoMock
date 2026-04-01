@@ -16,6 +16,29 @@ typedef bool boolean;
 typedef uint8_t byte;
 typedef uint16_t word;
 
+#ifndef PROGMEM
+#define PROGMEM
+#endif
+
+#include <cstring>
+
+static inline uint8_t pgm_read_byte_impl(const void* addr) {
+  uint8_t v;
+  std::memcpy(&v, addr, sizeof(v));
+  return v;
+}
+static inline uint16_t pgm_read_word_impl(const void* addr) {
+  uint16_t v;
+  std::memcpy(&v, addr, sizeof(v));
+  return v;
+}
+#ifndef pgm_read_byte
+#define pgm_read_byte(addr) ::pgm_read_byte_impl(reinterpret_cast<const void*>(addr))
+#endif
+#ifndef pgm_read_word
+#define pgm_read_word(addr) ::pgm_read_word_impl(reinterpret_cast<const void*>(addr))
+#endif
+
 #define DEC 10
 #define HEX 16
 #define OCT 8
@@ -75,6 +98,8 @@ inline std::unordered_map<uint8_t, IsrEntry>& isr_table() {
 inline void pinMode(uint8_t /*pin*/, uint8_t /*mode*/) {}
 inline void digitalWrite(uint8_t pin, uint8_t val) { mock::pin_state()[pin] = val; }
 inline int digitalRead(uint8_t pin) { return mock::pin_state()[pin]; }
+inline int analogRead(uint8_t /*pin*/) { return 0; }
+inline void analogWrite(uint8_t /*pin*/, int /*value*/) {}
 
 inline void attachInterrupt(uint8_t pin, std::function<void()> isr, uint8_t mode) {
   mock::isr_table()[pin] = {std::move(isr), mode};
