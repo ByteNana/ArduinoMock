@@ -80,3 +80,9 @@ TEST(StringBaseTest, BinaryFormatting) { EXPECT_EQ(String(255UL, BIN), "11111111
 TEST(StringBaseTest, OctalFormatting) { EXPECT_EQ(String(8UL, OCT), "10"); }
 
 TEST(StringBaseTest, DecimalFormatting) { EXPECT_EQ(String(42UL, DEC), "42"); }
+
+TEST(FreeRTOSTypesTest, TaskHandleAvailableViaArduinoH) {
+  // TaskHandle_t should be available without explicit freertos include
+  TaskHandle_t handle = nullptr;
+  EXPECT_EQ(handle, nullptr);
+}
