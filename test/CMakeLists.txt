@@ -45,5 +45,7 @@ if(ENABLE_GTEST_TESTS)
   add_gtest(missing_apis_gtest missing_apis_gtest.cpp)
   add_gtest(timer_gtest timer_gtest.cpp)
   add_gtest(timers_shim_gtest timers_shim_gtest.cpp)
+
   add_gtest(tone_gtest tone_gtest.cpp)
+  add_gtest(wire_gtest wire_gtest.cpp)
 endif()

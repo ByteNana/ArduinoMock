@@ -149,6 +149,7 @@ inline long map(long x, long in_min, long in_max, long out_min, long out_max) {
 
 #include "Stream.h"
 #include "WString.h"
+#include "Wire.h"
 #include "times.h"
 
 inline bool isSpace(char c) { return isspace(static_cast<unsigned char>(c)); }
