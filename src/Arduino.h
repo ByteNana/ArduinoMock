@@ -121,6 +121,7 @@ inline void mockResetGpio() {
 inline void tone(uint8_t /*pin*/, unsigned int /*frequency*/, unsigned long /*duration*/ = 0) {}
 inline void noTone(uint8_t /*pin*/) {}
 inline void setToneChannel(uint8_t /*channel*/ = 0) {}
+inline void yield() {}
 
 #include "Esp.h"
 #include "HardwareSerial.h"

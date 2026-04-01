@@ -132,3 +132,7 @@ TEST(PrintClass, FlushIsNonPureAndNoOp) {
   TestPrinter p;
   EXPECT_NO_THROW(p.flush());
 }
+
+// --- yield ---
+
+TEST(YieldTest, YieldCompiles) { EXPECT_NO_THROW(yield()); }
