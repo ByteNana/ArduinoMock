@@ -163,3 +163,24 @@ TEST(WiFiClientTest, StopDisconnects) {
   client.stop();
   EXPECT_FALSE(static_cast<bool>(client));
 }
+
+TEST(IPAddressTest, EqualityOperator) {
+  IPAddress a(192, 168, 1, 1);
+  IPAddress b(192, 168, 1, 1);
+  IPAddress c(10, 0, 0, 1);
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a == c);
+}
+
+TEST(IPAddressTest, InequalityOperator) {
+  IPAddress a(192, 168, 1, 1);
+  IPAddress b(10, 0, 0, 1);
+  EXPECT_TRUE(a != b);
+  EXPECT_FALSE(a != a);
+}
+
+TEST(IPAddressTest, StringConversion) {
+  IPAddress ip(192, 168, 1, 100);
+  String s = ip;  // implicit conversion
+  EXPECT_STREQ(s.c_str(), "192.168.1.100");
+}
