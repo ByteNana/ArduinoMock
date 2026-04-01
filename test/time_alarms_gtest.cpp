@@ -157,3 +157,18 @@ TEST(TimeAlarmsTest, WriteNextTriggerOutOfRangeIdDoesNotCrash) {
   Alarm.reset();
   EXPECT_NO_THROW(Alarm.writeNextTrigger(dtINVALID_ALARM_ID, std::time(nullptr) + 10));
 }
+
+TEST(TimeAlarmsTest, WriteUpdatesIntervalAndReschedulesAlarm) {
+  Alarm.reset();
+  AlarmID_t id = Alarm.timerRepeat(100, nullptr);
+  Alarm.write(id, 30);
+  time_t next = Alarm.getNextTrigger(id);
+  time_t now = std::time(nullptr);
+  EXPECT_GE(next, now + 28);
+  EXPECT_LE(next, now + 32);
+}
+
+TEST(TimeAlarmsTest, WriteOutOfRangeIdDoesNotCrash) {
+  Alarm.reset();
+  EXPECT_NO_THROW(Alarm.write(dtINVALID_ALARM_ID, 10));
+}

@@ -46,3 +46,16 @@ TEST(StringReadTest, ReadWorksWithHighBytes) {
   EXPECT_EQ(s.read(), 0xC0);
   EXPECT_EQ(s.read(), 0xFF);
 }
+
+TEST(StringClearTest, ClearEmptiesString) {
+  String s("hello");
+  s.clear();
+  EXPECT_EQ(s.length(), 0u);
+  EXPECT_STREQ(s.c_str(), "");
+}
+
+TEST(StringClearTest, ClearOnEmptyStringIsNoOp) {
+  String s;
+  EXPECT_NO_THROW(s.clear());
+  EXPECT_EQ(s.length(), 0u);
+}

@@ -92,6 +92,7 @@ class String {
 
   const char* c_str() const { return _data.c_str(); }
   size_t length() const { return _data.length(); }
+  void clear() { _data.clear(); }
 
   char charAt(int index) const {
     if (index >= 0 && static_cast<size_t>(index) < _data.size()) { return _data[index]; }
