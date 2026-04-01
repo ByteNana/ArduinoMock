@@ -51,7 +51,11 @@ class Print {
   size_t println(const String& str);
   size_t println(const __FlashStringHelper* str);
 
+#ifdef __GNUC__
   size_t printf(const char* format, ...) __attribute__((format(printf, 2, 3)));
+#else
+  size_t printf(const char* format, ...);
+#endif
 
  private:
   size_t printNumber(unsigned long val, int base);

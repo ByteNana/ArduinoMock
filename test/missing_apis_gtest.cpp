@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <type_traits>
+
 #include "Arduino.h"
 #include "HardwareSerial.h"
 #include "freertos/task/task.h"

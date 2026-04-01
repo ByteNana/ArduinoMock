@@ -163,5 +163,8 @@ size_t Print::printf(const char* format, ...) {
   int n = vsnprintf(buf, sizeof(buf), format, args);
   va_end(args);
   if (n <= 0) return 0;
-  return write(reinterpret_cast<const uint8_t*>(buf), static_cast<size_t>(n));
+  size_t writeLen = (n < static_cast<int>(sizeof(buf))) ? static_cast<size_t>(n)
+                                                        : static_cast<size_t>(sizeof(buf) - 1);
+  write(reinterpret_cast<const uint8_t*>(buf), writeLen);
+  return static_cast<size_t>(n);
 }
