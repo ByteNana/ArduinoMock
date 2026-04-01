@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstring>
 
 #ifndef ESP_OK
 #define ESP_OK 0
@@ -22,6 +23,29 @@ typedef enum {
 } wifi_second_chan_t;
 
 typedef int esp_err_t;
+
+struct wifi_sta_config_t {
+  uint8_t ssid[32];
+  uint8_t password[64];
+};
+
+struct wifi_ap_config_t {
+  uint8_t ssid[32];
+};
+
+union wifi_config_t {
+  wifi_sta_config_t sta;
+  wifi_ap_config_t ap;
+};
+
+inline esp_err_t esp_wifi_get_config(wifi_interface_t /*ifx*/, wifi_config_t* cfg) {
+  if (cfg) std::memset(cfg, 0, sizeof(wifi_config_t));
+  return ESP_OK;
+}
+
+inline esp_err_t esp_wifi_set_config(wifi_interface_t /*ifx*/, wifi_config_t* /*cfg*/) {
+  return ESP_OK;
+}
 
 inline esp_err_t esp_wifi_get_mac(wifi_interface_t ifx, uint8_t* mac) {
   (void)ifx;

@@ -28,6 +28,24 @@ TEST(EspWifiTest, GetChannelReturnsOkAndSetsPrimaryAndSecond) {
   EXPECT_EQ(second, WIFI_SECOND_CHAN_NONE);
 }
 
+// --- esp_wifi_get_config / esp_wifi_set_config ---
+
+TEST(EspWifiConfigTest, GetConfigReturnsOkAndZeroesBuffer) {
+  wifi_config_t cfg;
+  cfg.sta.ssid[0] = 0xFF;
+  EXPECT_EQ(esp_wifi_get_config(WIFI_IF_STA, &cfg), ESP_OK);
+  EXPECT_EQ(cfg.sta.ssid[0], 0);
+}
+
+TEST(EspWifiConfigTest, SetConfigReturnsOk) {
+  wifi_config_t cfg{};
+  EXPECT_EQ(esp_wifi_set_config(WIFI_IF_STA, &cfg), ESP_OK);
+}
+
+TEST(EspWifiConfigTest, GetConfigNullptrDoesNotCrash) {
+  EXPECT_EQ(esp_wifi_get_config(WIFI_IF_STA, nullptr), ESP_OK);
+}
+
 // --- WIFI_IF_STA / WIFI_IF_AP ---
 
 TEST(EspWifiTest, InterfaceConstants) {
