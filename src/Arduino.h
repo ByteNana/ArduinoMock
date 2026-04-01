@@ -124,6 +124,7 @@ inline void setToneChannel(uint8_t /*channel*/ = 0) {}
 
 #include "Esp.h"
 #include "HardwareSerial.h"
+#include "esp32-hal-log.h"
 // Arduino math macros
 #ifndef PI
 #define PI 3.14159265358979323846
