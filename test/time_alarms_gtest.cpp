@@ -112,3 +112,48 @@ TEST(TimeAlarmsTest, TimerOnceFiresOnlyOnce) {
   Alarm.delay(20);
   EXPECT_EQ(count, 1);
 }
+
+// --- getNextTrigger / writeNextTrigger ---
+
+TEST(TimeAlarmsTest, GetNextTriggerReturnsFutureForFreshAlarm) {
+  Alarm.reset();
+  AlarmID_t id = Alarm.timerRepeat(10, nullptr);
+  time_t trigger = Alarm.getNextTrigger(id);
+  EXPECT_GE(trigger, std::time(nullptr));
+}
+
+TEST(TimeAlarmsTest, GetNextTriggerReturnsZeroForInvalidId) {
+  Alarm.reset();
+  EXPECT_EQ(Alarm.getNextTrigger(dtINVALID_ALARM_ID), 0);
+}
+
+TEST(TimeAlarmsTest, GetNextTriggerReturnsZeroForDisabledAlarm) {
+  Alarm.reset();
+  AlarmID_t id = Alarm.timerRepeat(10, nullptr);
+  Alarm.disable(id);
+  EXPECT_EQ(Alarm.getNextTrigger(id), 0);
+}
+
+TEST(TimeAlarmsTest, WriteNextTriggerRoundTrip) {
+  Alarm.reset();
+  AlarmID_t id = Alarm.timerRepeat(100, nullptr);
+  time_t future = std::time(nullptr) + 10;
+  Alarm.writeNextTrigger(id, future);
+  time_t result = Alarm.getNextTrigger(id);
+  EXPECT_GE(result, future - 2);
+  EXPECT_LE(result, future + 2);
+}
+
+TEST(TimeAlarmsTest, WriteNextTriggerPastTimestampClampsToNow) {
+  Alarm.reset();
+  AlarmID_t id = Alarm.timerRepeat(100, nullptr);
+  time_t past = std::time(nullptr) - 100;
+  time_t now = std::time(nullptr);
+  Alarm.writeNextTrigger(id, past);
+  EXPECT_GE(Alarm.getNextTrigger(id), now);
+}
+
+TEST(TimeAlarmsTest, WriteNextTriggerOutOfRangeIdDoesNotCrash) {
+  Alarm.reset();
+  EXPECT_NO_THROW(Alarm.writeNextTrigger(dtINVALID_ALARM_ID, std::time(nullptr) + 10));
+}

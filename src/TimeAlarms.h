@@ -2,6 +2,7 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
+#include <ctime>
 #include <functional>
 #include <thread>
 
@@ -69,6 +70,23 @@ class AlarmClass {
       tick();
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+  }
+
+  time_t getNextTrigger(AlarmID_t id) const {
+    if (id >= MAX_ALARMS || !_alarms[id].enabled) return 0;
+    auto remaining = _alarms[id].nextFire - std::chrono::steady_clock::now();
+    auto secs = std::chrono::duration_cast<std::chrono::seconds>(remaining).count();
+    return static_cast<time_t>(std::time(nullptr) + (secs > 0 ? secs : 0));
+  }
+
+  void writeNextTrigger(AlarmID_t id, time_t timestamp) {
+    if (id >= MAX_ALARMS) return;
+    const time_t nowTime = std::time(nullptr);
+    const auto steadyNow = std::chrono::steady_clock::now();
+    using SecondsRep = std::chrono::seconds::rep;
+    SecondsRep secs = 0;
+    if (timestamp > nowTime) { secs = static_cast<SecondsRep>(timestamp - nowTime); }
+    _alarms[id].nextFire = steadyNow + std::chrono::seconds(secs);
   }
 
   void reset() {
