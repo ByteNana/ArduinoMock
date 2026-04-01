@@ -246,7 +246,7 @@ TEST(WiFiSoftAPTest, SoftAPDisconnectReturnsTrue) { EXPECT_TRUE(WiFi.softAPdisco
 
 TEST(WiFiSoftAPTest, SoftAPgetStationNumReturnsZero) { EXPECT_EQ(WiFi.softAPgetStationNum(), 0u); }
 
-TEST(WiFiSoftAPTest, SoftAPIPreturnsDefaultIP) {
+TEST(WiFiSoftAPTest, SoftAPIPReturnsDefaultIP) {
   IPAddress ip = WiFi.softAPIP();
   EXPECT_EQ(ip[0], 192);
   EXPECT_EQ(ip[1], 168);
