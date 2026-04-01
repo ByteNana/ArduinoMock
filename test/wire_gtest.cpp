@@ -14,7 +14,7 @@ class WireTest : public ::testing::Test {
 TEST_F(WireTest, BeginReturnsTrue) { EXPECT_TRUE(Wire.begin()); }
 
 // 2. write(byte) returns 1
-TEST_F(WireTest, WriteBytReturnsOne) {
+TEST_F(WireTest, WriteByteReturnsOne) {
   Wire.beginTransmission(0x20);
   EXPECT_EQ(Wire.write(0xAB), 1u);
 }

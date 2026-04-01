@@ -2,7 +2,10 @@
 
 TwoWire::TwoWire(uint8_t bus) : _bus(bus) {}
 
-bool TwoWire::begin(int /*sda*/, int /*scl*/) { return true; }
+bool TwoWire::begin(int /*sda*/, int /*scl*/, uint32_t freq) {
+  if (freq > 0) setClock(freq);
+  return true;
+}
 
 void TwoWire::end() {}
 
@@ -12,7 +15,10 @@ void TwoWire::beginTransmission(uint8_t /*addr*/) {}
 
 uint8_t TwoWire::endTransmission(bool /*stop*/) { return 0; }
 
-uint8_t TwoWire::requestFrom(uint8_t /*addr*/, uint8_t count) { return count; }
+uint8_t TwoWire::requestFrom(uint8_t /*addr*/, uint8_t count) {
+  uint8_t avail = static_cast<uint8_t>(available());
+  return avail < count ? avail : count;
+}
 
 size_t TwoWire::write(uint8_t b) {
   _written.push_back(b);

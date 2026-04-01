@@ -9,13 +9,24 @@ class TwoWire {
  public:
   explicit TwoWire(uint8_t bus = 0);
 
-  bool begin(int sda = -1, int scl = -1);
+  bool begin(int sda = -1, int scl = -1, uint32_t freq = 0);
   void end();
   void setClock(uint32_t freq);
 
   void beginTransmission(uint8_t addr);
   uint8_t endTransmission(bool stop = true);
   uint8_t requestFrom(uint8_t addr, uint8_t count);
+  uint8_t requestFrom(uint8_t addr, uint8_t count, bool stop) {
+    (void)stop;
+    return requestFrom(addr, count);
+  }
+  uint8_t requestFrom(uint8_t addr, size_t count) {
+    return requestFrom(addr, static_cast<uint8_t>(count));
+  }
+  uint8_t requestFrom(uint8_t addr, size_t count, bool stop) {
+    (void)stop;
+    return requestFrom(addr, static_cast<uint8_t>(count));
+  }
 
   size_t write(uint8_t b);
   size_t write(const uint8_t* buf, size_t n);
