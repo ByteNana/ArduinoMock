@@ -34,6 +34,11 @@ TEST_F(WiFiTest, DisconnectWithArgs) {
   EXPECT_EQ(WiFi.status(), WL_DISCONNECTED);
 }
 
+TEST_F(WiFiTest, DisconnectSingleArgCompiles) {
+  EXPECT_NO_THROW(WiFi.disconnect(true));
+  EXPECT_NO_THROW(WiFi.disconnect(false));
+}
+
 TEST_F(WiFiTest, RSSIReturnsMockValue) {
   EXPECT_EQ(WiFi.RSSI(), -50);
   WiFi.setRSSI(-75);
