@@ -16,6 +16,16 @@ typedef bool boolean;
 typedef uint8_t byte;
 typedef uint16_t word;
 
+#ifndef PROGMEM
+#define PROGMEM
+#endif
+#ifndef pgm_read_byte
+#define pgm_read_byte(addr) (*(const uint8_t*)(addr))
+#endif
+#ifndef pgm_read_word
+#define pgm_read_word(addr) (*(const uint16_t*)(addr))
+#endif
+
 #define DEC 10
 #define HEX 16
 #define OCT 8
@@ -75,6 +85,8 @@ inline std::unordered_map<uint8_t, IsrEntry>& isr_table() {
 inline void pinMode(uint8_t /*pin*/, uint8_t /*mode*/) {}
 inline void digitalWrite(uint8_t pin, uint8_t val) { mock::pin_state()[pin] = val; }
 inline int digitalRead(uint8_t pin) { return mock::pin_state()[pin]; }
+inline int analogRead(uint8_t /*pin*/) { return 0; }
+inline void analogWrite(uint8_t /*pin*/, int /*value*/) {}
 
 inline void attachInterrupt(uint8_t pin, std::function<void()> isr, uint8_t mode) {
   mock::isr_table()[pin] = {std::move(isr), mode};
