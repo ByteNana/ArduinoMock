@@ -17,6 +17,8 @@ struct TaskImpl {
   std::condition_variable cv;
   std::string name;
   UBaseType_t priority{0};
+  uint32_t notificationValue{0};
+  bool notificationPending{false};
 };
 
 thread_local TaskImpl* tls_current_task = nullptr;
@@ -101,13 +103,55 @@ TickType_t xTaskGetTickCount(void) {
   return static_cast<TickType_t>(ms);
 }
 
-BaseType_t xTaskNotify(
-    TaskHandle_t /*xTaskToNotify*/, uint32_t /*ulValue*/, eNotifyAction /*eAction*/) {
+BaseType_t xTaskNotify(TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyAction eAction) {
+  TaskImpl* impl = reinterpret_cast<TaskImpl*>(xTaskToNotify);
+  if (!impl) return pdFALSE;
+  {
+    std::lock_guard<std::mutex> lk(impl->mtx);
+    switch (eAction) {
+      case eSetBits:
+        impl->notificationValue |= ulValue;
+        impl->notificationPending = true;
+        break;
+      case eIncrement:
+        impl->notificationValue++;
+        impl->notificationPending = true;
+        break;
+      case eSetValueWithOverwrite:
+        impl->notificationValue = ulValue;
+        impl->notificationPending = true;
+        break;
+      case eSetValueWithoutOverwrite:
+        if (!impl->notificationPending) {
+          impl->notificationValue = ulValue;
+          impl->notificationPending = true;
+        }
+        break;
+      case eNoAction:
+        impl->notificationPending = true;
+        break;
+    }
+  }
+  impl->cv.notify_all();
   return pdPASS;
 }
 
-uint32_t ulTaskNotifyTake(BaseType_t /*xClearCountOnExit*/, TickType_t /*xTicksToWait*/) {
-  return 0;
+uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit, TickType_t xTicksToWait) {
+  TaskImpl* impl = tls_current_task;
+  if (!impl) return 0;
+  std::unique_lock<std::mutex> lk(impl->mtx);
+  impl->cv.wait_for(lk, std::chrono::milliseconds(xTicksToWait), [impl]() {
+    return impl->notificationPending || impl->cancel.load();
+  });
+  if (!impl->notificationPending) return 0;
+  uint32_t value = impl->notificationValue;
+  if (xClearCountOnExit == pdTRUE) {
+    impl->notificationValue = 0;
+  } else if (impl->notificationValue > 0) {
+    impl->notificationValue--;
+  }
+  impl->notificationPending = (impl->notificationValue > 0);
+  return value;
 }
 
 size_t xPortGetFreeHeapSize(void) { return 1024 * 1024; }
