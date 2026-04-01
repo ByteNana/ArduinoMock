@@ -162,8 +162,8 @@ TEST(TimeAlarmsTest, WriteUpdatesIntervalAndReschedulesAlarm) {
   Alarm.reset();
   AlarmID_t id = Alarm.timerRepeat(100, nullptr);
   Alarm.write(id, 30);
-  time_t next = Alarm.getNextTrigger(id);
   time_t now = std::time(nullptr);
+  time_t next = Alarm.getNextTrigger(id);
   EXPECT_GE(next, now + 28);
   EXPECT_LE(next, now + 32);
 }
