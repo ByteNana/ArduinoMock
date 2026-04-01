@@ -43,6 +43,31 @@ class WiFiClass {
   String macAddress();
   void macAddress(uint8_t* mac);
   bool begin(const char* ssid, const char* password);
+  // No-arg begin — reconnect using saved credentials (stub: returns _beginConnects)
+  bool begin() {
+    if (_beginConnects) {
+      _status = WL_CONNECTED;
+    } else {
+      _status = WL_CONNECT_FAILED;
+    }
+    return _beginConnects;
+  }
+
+  // Soft AP
+  bool softAP(const char*, const char* = nullptr, int = 1, int = 0, int = 4) { return true; }
+  bool softAPConfig(IPAddress, IPAddress, IPAddress) { return true; }
+  bool softAPdisconnect(bool = false) { return true; }
+  uint8_t softAPgetStationNum() { return 0; }
+  IPAddress softAPIP() { return IPAddress(192, 168, 3, 3); }
+
+  // AP/STA enable
+  bool enableAP(bool) { return true; }
+  bool enableSTA(bool) { return true; }
+
+  // Credential/reconnect helpers
+  String psk() { return String(""); }
+  bool getAutoConnect() { return true; }
+  bool getAutoReconnect() { return true; }
   void mode(wifi_mode_t m) { _mode = m; }
   wifi_mode_t getMode() const { return _mode; }
   void disconnect();
