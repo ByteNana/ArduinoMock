@@ -136,3 +136,18 @@ TEST(PrintClass, FlushIsNonPureAndNoOp) {
 // --- yield ---
 
 TEST(YieldTest, YieldCompiles) { EXPECT_NO_THROW(yield()); }
+
+// --- dtostrf ---
+
+TEST(DtostrfTest, BasicConversion) {
+  char buf[32];
+  char* result = dtostrf(3.14, 6, 2, buf);
+  EXPECT_EQ(result, buf);
+  EXPECT_STREQ(buf, "  3.14");
+}
+
+TEST(DtostrfTest, NegativeValue) {
+  char buf[32];
+  dtostrf(-1.5, 5, 1, buf);
+  EXPECT_STREQ(buf, " -1.5");
+}

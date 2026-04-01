@@ -68,6 +68,10 @@ String WiFiClass::macAddress() {
   return String(buf);
 }
 
+void WiFiClass::macAddress(uint8_t* mac) {
+  if (mac) std::memset(mac, 0, 6);
+}
+
 bool WiFiClass::begin(const char* ssid, const char* password) {
   _ssid = ssid ? ssid : "";
   if (_beginConnects) {

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <random>
 #include <thread>
@@ -213,6 +214,11 @@ inline bool isDigit(char c) { return isdigit(static_cast<unsigned char>(c)); }
 inline bool isAlpha(char c) { return isalpha(static_cast<unsigned char>(c)); }
 
 inline bool isAlphaNumeric(char c) { return isalnum(static_cast<unsigned char>(c)); }
+
+inline char* dtostrf(double val, signed char width, unsigned char prec, char* buf) {
+  std::sprintf(buf, "%*.*f", static_cast<int>(width), static_cast<int>(prec), val);
+  return buf;
+}
 
 inline void randomSeed(unsigned long seed) {
   static std::mt19937 generator;

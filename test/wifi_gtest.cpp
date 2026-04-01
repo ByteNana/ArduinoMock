@@ -149,6 +149,12 @@ TEST_F(WiFiTest, ResetRestoresDefaultMode) {
   EXPECT_EQ(WiFi.getMode(), WIFI_STA);
 }
 
+TEST_F(WiFiTest, MacAddressBufferOverload) {
+  uint8_t mac[6];
+  WiFi.macAddress(mac);
+  for (int i = 0; i < 6; ++i) EXPECT_EQ(mac[i], 0);
+}
+
 // WiFiClient tests
 
 class WiFiClientTest : public ::testing::Test {
