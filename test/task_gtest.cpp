@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <atomic>
+#include <chrono>
 #include <thread>
 
 #include "freertos/FreeRTOS.h"
@@ -114,14 +115,12 @@ TEST(TaskNotifyTest, SetBitsAccumulates) {
 
   std::this_thread::sleep_for(std::chrono::milliseconds(20));
   EXPECT_EQ(xTaskNotify(th, 0x01u, eSetBits), pdPASS);
-  // A second eSetBits before the task wakes — value should OR together
-  // (task may or may not have consumed first; this tests the OR path at least)
 
   for (int i = 0; i < 100 && !s.done.load(); ++i)
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
   EXPECT_TRUE(s.done.load());
-  EXPECT_EQ(s.received.load() & 0x01u, 0x01u);
+  EXPECT_EQ(s.received.load(), 0x01u);
 }
 
 TEST(TaskNotifyTest, IncrementAction) {
@@ -176,8 +175,8 @@ TEST(TaskNotifyTest, SetValueWithoutOverwriteDoesNotReplaceIfPending) {
   std::this_thread::sleep_for(std::chrono::milliseconds(20));
   // First call: sets value to 10
   EXPECT_EQ(xTaskNotify(th, 10u, eSetValueWithoutOverwrite), pdPASS);
-  // Second call: should NOT overwrite (pending=true)
-  EXPECT_EQ(xTaskNotify(th, 99u, eSetValueWithoutOverwrite), pdPASS);
+  // Second call: notification already pending — must return pdFALSE and not overwrite
+  EXPECT_EQ(xTaskNotify(th, 99u, eSetValueWithoutOverwrite), pdFALSE);
 
   for (int i = 0; i < 100 && !s.done.load(); ++i)
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
