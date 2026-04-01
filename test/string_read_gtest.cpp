@@ -59,3 +59,48 @@ TEST(StringClearTest, ClearOnEmptyStringIsNoOp) {
   EXPECT_NO_THROW(s.clear());
   EXPECT_EQ(s.length(), 0u);
 }
+
+TEST(StringEqualsTest, EqualsString) {
+  String a("hello");
+  String b("hello");
+  String c("world");
+  EXPECT_TRUE(a.equals(b));
+  EXPECT_FALSE(a.equals(c));
+}
+
+TEST(StringEqualsTest, EqualsCStr) {
+  String a("hello");
+  EXPECT_TRUE(a.equals("hello"));
+  EXPECT_FALSE(a.equals("world"));
+}
+
+TEST(StringEqualsTest, EqualsIgnoreCaseMatch) {
+  String a("Hello");
+  String b("HELLO");
+  EXPECT_TRUE(a.equalsIgnoreCase(b));
+}
+
+TEST(StringEqualsTest, EqualsIgnoreCaseMismatch) {
+  String a("Hello");
+  String b("World");
+  EXPECT_FALSE(a.equalsIgnoreCase(b));
+}
+
+TEST(StringEqualsTest, EqualsIgnoreCaseDifferentLength) {
+  String a("Hello");
+  String b("Hello!");
+  EXPECT_FALSE(a.equalsIgnoreCase(b));
+}
+
+TEST(StringWriteTest, WriteByteAppendsChar) {
+  String s;
+  EXPECT_EQ(s.write(static_cast<uint8_t>('A')), 1u);
+  EXPECT_STREQ(s.c_str(), "A");
+}
+
+TEST(StringWriteTest, WriteBufferAppendsBytes) {
+  String s;
+  const uint8_t buf[] = {'h', 'i'};
+  EXPECT_EQ(s.write(buf, 2), 2u);
+  EXPECT_STREQ(s.c_str(), "hi");
+}

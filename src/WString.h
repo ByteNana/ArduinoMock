@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <string>
 #include <type_traits>
@@ -89,6 +91,19 @@ class String {
 
   bool operator==(const char* rhs) const { return _data == rhs; }
   bool operator!=(const char* rhs) const { return _data != rhs; }
+
+  bool equals(const String& rhs) const { return _data == rhs._data; }
+  bool equals(const char* rhs) const { return _data == rhs; }
+
+  bool equalsIgnoreCase(const String& rhs) const {
+    if (_data.size() != rhs._data.size()) return false;
+    for (size_t i = 0; i < _data.size(); i++) {
+      if (tolower(static_cast<unsigned char>(_data[i])) !=
+          tolower(static_cast<unsigned char>(rhs._data[i])))
+        return false;
+    }
+    return true;
+  }
 
   const char* c_str() const { return _data.c_str(); }
   size_t length() const { return _data.length(); }
@@ -232,6 +247,16 @@ class String {
   }
 
   bool isEmpty() const { return _data.empty(); }
+
+  size_t write(uint8_t c) {
+    _data += static_cast<char>(c);
+    return 1;
+  }
+
+  size_t write(const uint8_t* buf, size_t size) {
+    _data.append(reinterpret_cast<const char*>(buf), size);
+    return size;
+  }
 
   // Stream-like read interface (used by ArduinoJson Reader<String>)
   int read() const {
