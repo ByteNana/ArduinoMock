@@ -19,11 +19,24 @@ typedef uint16_t word;
 #ifndef PROGMEM
 #define PROGMEM
 #endif
+
+#include <cstring>
+
+static inline uint8_t pgm_read_byte_impl(const void* addr) {
+  uint8_t v;
+  std::memcpy(&v, addr, sizeof(v));
+  return v;
+}
+static inline uint16_t pgm_read_word_impl(const void* addr) {
+  uint16_t v;
+  std::memcpy(&v, addr, sizeof(v));
+  return v;
+}
 #ifndef pgm_read_byte
-#define pgm_read_byte(addr) (*(const uint8_t*)(addr))
+#define pgm_read_byte(addr) ::pgm_read_byte_impl(reinterpret_cast<const void*>(addr))
 #endif
 #ifndef pgm_read_word
-#define pgm_read_word(addr) (*(const uint16_t*)(addr))
+#define pgm_read_word(addr) ::pgm_read_word_impl(reinterpret_cast<const void*>(addr))
 #endif
 
 #define DEC 10
