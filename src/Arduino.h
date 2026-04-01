@@ -216,7 +216,7 @@ inline bool isAlpha(char c) { return isalpha(static_cast<unsigned char>(c)); }
 inline bool isAlphaNumeric(char c) { return isalnum(static_cast<unsigned char>(c)); }
 
 inline char* dtostrf(double val, signed char width, unsigned char prec, char* buf) {
-  std::snprintf(buf, 32, "%*.*f", static_cast<int>(width), static_cast<int>(prec), val);
+  std::sprintf(buf, "%*.*f", static_cast<int>(width), static_cast<int>(prec), val);
   return buf;
 }
 
