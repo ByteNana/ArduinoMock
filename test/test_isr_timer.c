@@ -20,8 +20,9 @@ void tearDown(void) { mockTimerClear(); }
 
 void test_xTimerStartFromISR_returns_pdPASS(void) {
     TimerHandle_t t  = xTimerCreate("t", 1000, pdFALSE, NULL, timer_cb);
-    BaseType_t woken = pdFALSE;
+    BaseType_t woken = pdTRUE; /* initialize to non-zero to detect write */
     TEST_ASSERT_EQUAL(pdPASS, xTimerStartFromISR(t, &woken));
+    TEST_ASSERT_EQUAL(pdFALSE, woken);
 }
 
 void test_xTimerStartFromISR_activates_timer(void) {
@@ -41,8 +42,9 @@ void test_xTimerStartFromISR_accepts_null_woken(void) {
 void test_xTimerStopFromISR_returns_pdPASS(void) {
     TimerHandle_t t = xTimerCreate("t", 1000, pdFALSE, NULL, timer_cb);
     xTimerStart(t, 0);
-    BaseType_t woken = pdFALSE;
+    BaseType_t woken = pdTRUE;
     TEST_ASSERT_EQUAL(pdPASS, xTimerStopFromISR(t, &woken));
+    TEST_ASSERT_EQUAL(pdFALSE, woken);
 }
 
 void test_xTimerStopFromISR_deactivates_timer(void) {
@@ -63,8 +65,9 @@ void test_xTimerStopFromISR_accepts_null_woken(void) {
 
 void test_xTimerResetFromISR_returns_pdPASS(void) {
     TimerHandle_t t  = xTimerCreate("t", 1000, pdFALSE, NULL, timer_cb);
-    BaseType_t woken = pdFALSE;
+    BaseType_t woken = pdTRUE;
     TEST_ASSERT_EQUAL(pdPASS, xTimerResetFromISR(t, &woken));
+    TEST_ASSERT_EQUAL(pdFALSE, woken);
 }
 
 void test_xTimerResetFromISR_activates_timer(void) {

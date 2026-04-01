@@ -16,20 +16,20 @@ void *pvTimerGetTimerID(TimerHandle_t timer);
 const char *pcTimerGetName(TimerHandle_t timer);
 
 /* ISR-safe variants — on native, delegate to the standard functions.
- * The pxHigherPriorityTaskWoken out-param is ignored (no preemption). */
+ * The pxHigherPriorityTaskWoken out-param is set to pdFALSE (no preemption). */
 static inline BaseType_t xTimerStartFromISR(TimerHandle_t timer,
                                             BaseType_t *pxHigherPriorityTaskWoken) {
-    (void)pxHigherPriorityTaskWoken;
+    if (pxHigherPriorityTaskWoken != NULL) *pxHigherPriorityTaskWoken = pdFALSE;
     return xTimerStart(timer, 0);
 }
 static inline BaseType_t xTimerStopFromISR(TimerHandle_t timer,
                                            BaseType_t *pxHigherPriorityTaskWoken) {
-    (void)pxHigherPriorityTaskWoken;
+    if (pxHigherPriorityTaskWoken != NULL) *pxHigherPriorityTaskWoken = pdFALSE;
     return xTimerStop(timer, 0);
 }
 static inline BaseType_t xTimerResetFromISR(TimerHandle_t timer,
                                             BaseType_t *pxHigherPriorityTaskWoken) {
-    (void)pxHigherPriorityTaskWoken;
+    if (pxHigherPriorityTaskWoken != NULL) *pxHigherPriorityTaskWoken = pdFALSE;
     return xTimerReset(timer, 0);
 }
 
