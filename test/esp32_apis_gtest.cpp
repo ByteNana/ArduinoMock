@@ -37,10 +37,9 @@ TEST(WiFiClientStaticTest, SetCanConnectIsStatic) {
 
 // --- FreeRTOS Task Notifications ---
 
-TEST(TaskNotificationTest, XTaskNotifyReturnsPdPASS) {
-  TaskHandle_t th = nullptr;
-  // xTaskNotify with nullptr handle — just test it compiles and returns pdPASS
-  EXPECT_EQ(xTaskNotify(th, 1, eSetValueWithOverwrite), pdPASS);
+TEST(TaskNotificationTest, XTaskNotifyNullHandleReturnsFalse) {
+  // Real implementation rejects nullptr handle
+  EXPECT_EQ(xTaskNotify(nullptr, 1, eSetValueWithOverwrite), pdFALSE);
 }
 
 TEST(TaskNotificationTest, UlTaskNotifyTakeReturnsZero) {
