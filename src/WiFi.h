@@ -41,6 +41,7 @@ class WiFiClass {
   bool isConnected();
   IPAddress localIP();
   String macAddress();
+  void macAddress(uint8_t* mac);
   bool begin(const char* ssid, const char* password);
   void mode(wifi_mode_t m) { _mode = m; }
   wifi_mode_t getMode() const { return _mode; }
