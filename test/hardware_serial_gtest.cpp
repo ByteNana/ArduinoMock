@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <limits>
+
 #include "HardwareSerial.h"
 
 // --- begin() overloads ---
@@ -143,6 +145,57 @@ TEST(HardwareSerialTest, InstancesAreIndependent) {
   EXPECT_EQ(s1.available(), 7);
   s0.read();
   EXPECT_EQ(s1.available(), 7);
+}
+
+// --- print with numeric base ---
+
+TEST(HardwareSerialTest, PrintUnsignedDecimal) {
+  HardwareSerial s(0);
+  s.print(42u, DEC);
+  EXPECT_EQ(s.getTxData(), "42");
+}
+
+TEST(HardwareSerialTest, PrintUnsignedHex) {
+  HardwareSerial s(0);
+  s.print(255u, HEX);
+  EXPECT_EQ(s.getTxData(), "FF");
+}
+
+TEST(HardwareSerialTest, PrintUnsignedLongOctal) {
+  HardwareSerial s(0);
+  s.print(8ul, OCT);
+  EXPECT_EQ(s.getTxData(), "10");
+}
+
+TEST(HardwareSerialTest, PrintNegativeSignedDecimal) {
+  HardwareSerial s(0);
+  s.print(-1, DEC);
+  EXPECT_EQ(s.getTxData(), "-1");
+}
+
+TEST(HardwareSerialTest, PrintSignedHex) {
+  HardwareSerial s(0);
+  s.print(255, HEX);
+  EXPECT_EQ(s.getTxData(), "FF");
+}
+
+TEST(HardwareSerialTest, PrintUnsignedBinary) {
+  HardwareSerial s(0);
+  s.print(5u, BIN);
+  EXPECT_EQ(s.getTxData(), "101");
+}
+
+TEST(HardwareSerialTest, PrintZeroBinary) {
+  HardwareSerial s(0);
+  s.print(0u, BIN);
+  EXPECT_EQ(s.getTxData(), "0");
+}
+
+TEST(HardwareSerialTest, PrintLongMinDecimal) {
+  HardwareSerial s(0);
+  s.print(static_cast<long>(std::numeric_limits<long>::min()), DEC);
+  std::string expected = "-" + std::to_string(std::numeric_limits<long>::max() + 1UL);
+  EXPECT_EQ(s.getTxData(), expected);
 }
 
 // --- global instances ---
