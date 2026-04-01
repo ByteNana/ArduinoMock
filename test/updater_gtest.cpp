@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "Updater.h"
+#include "Update.h"
 
 TEST(UpdaterTest, BeginDefaultReturnsFalse) { EXPECT_FALSE(Update.begin()); }
 
