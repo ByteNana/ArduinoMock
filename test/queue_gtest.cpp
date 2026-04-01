@@ -81,7 +81,7 @@ TEST(QueueTest, PeekDoesNotRemove) {
   vQueueDelete(q);
 }
 
-TEST(ProjdefsTest, TicksToMsRoundtrips) {
-  EXPECT_EQ(pdTICKS_TO_MS(1000), 1000u);
+TEST(ProjdefsTest, TicksToMsRespectsPortTickPeriod) {
+  EXPECT_EQ(pdTICKS_TO_MS(1000), 1000u * portTICK_PERIOD_MS);
   EXPECT_EQ(pdTICKS_TO_MS(0), 0u);
 }
