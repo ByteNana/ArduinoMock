@@ -86,7 +86,10 @@ void File::close() {
 
 // --- MockSPIFFS implementation ---
 
-bool MockSPIFFS::begin(bool) { return _mounted; }
+bool MockSPIFFS::begin(bool) {
+  if (_canMount) _mounted = true;
+  return _canMount;
+}
 
 bool MockSPIFFS::begin(bool formatOnFail, const char*, uint8_t) { return begin(formatOnFail); }
 

@@ -54,18 +54,20 @@ class MockSPIFFS {
   bool rename(const char* from, const char* to);
 
   // Test helpers
-  void setMounted(bool v) { _mounted = v; }
+  void setMounted(bool v) { _canMount = v; }
   void addFile(const char* path, const std::string& content) { _files[path] = content; }
   std::string getFile(const char* path) { return _files.count(path) ? _files[path] : ""; }
   void clear() { _files.clear(); }
   void reset() {
     _files.clear();
-    _mounted = true;
+    _mounted = false;
+    _canMount = true;
   }
 
  private:
   std::map<std::string, std::string> _files;
-  bool _mounted = true;
+  bool _mounted = false;
+  bool _canMount = true;
   friend class File;
 };
 

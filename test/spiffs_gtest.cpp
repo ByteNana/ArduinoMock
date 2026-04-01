@@ -174,10 +174,10 @@ TEST_F(SPIFFSTest, LittleFSBeginFormatOnFailReturnsTrue) {
 
 // --- end() ---
 
-TEST_F(SPIFFSTest, EndSetsMountedFalse) {
+TEST_F(SPIFFSTest, EndAllowsRemounting) {
   EXPECT_TRUE(SPIFFS.begin());
   SPIFFS.end();
-  EXPECT_FALSE(SPIFFS.begin());
+  EXPECT_TRUE(SPIFFS.begin());  // end() doesn't prevent remounting
 }
 
 // --- begin(bool, const char*, uint8_t) ---
