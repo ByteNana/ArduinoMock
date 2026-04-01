@@ -18,6 +18,10 @@ typedef struct TaskControlBlock* TaskHandle_t;
 #define tskIDLE_PRIORITY 0
 #endif
 
+#ifndef taskYIELD
+#define taskYIELD() ((void)0)
+#endif
+
 // Task notification actions
 typedef enum {
   eNoAction,

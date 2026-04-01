@@ -19,3 +19,5 @@ TEST(TaskTest, TickAndCreate) {
   vTaskDelay(pdMS_TO_TICKS(80));
   vTaskEndScheduler();
 }
+
+TEST(TaskTest, TaskYieldCompiles) { taskYIELD(); }
