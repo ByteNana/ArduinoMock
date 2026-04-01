@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 
+#include "Client.h"
 #include "WiFi.h"
 #include "WiFiClient.h"
+#include "WiFiClientSecure.h"
 
 class WiFiTest : public ::testing::Test {
  protected:
@@ -149,20 +151,25 @@ TEST_F(WiFiTest, ResetRestoresDefaultMode) {
 
 // WiFiClient tests
 
-TEST(WiFiClientTest, ConnectsByDefault) {
+class WiFiClientTest : public ::testing::Test {
+ protected:
+  void SetUp() override { WiFiClient::setCanConnect(true); }
+};
+
+TEST_F(WiFiClientTest, ConnectsByDefault) {
   WiFiClient client;
   EXPECT_TRUE(client.connect(IPAddress(8, 8, 8, 8), 80));
   EXPECT_TRUE(static_cast<bool>(client));
 }
 
-TEST(WiFiClientTest, SetCanConnectFalse) {
+TEST_F(WiFiClientTest, SetCanConnectFalse) {
   WiFiClient client;
   client.setCanConnect(false);
   EXPECT_FALSE(client.connect(IPAddress(8, 8, 8, 8), 80));
   EXPECT_FALSE(static_cast<bool>(client));
 }
 
-TEST(WiFiClientTest, StopDisconnects) {
+TEST_F(WiFiClientTest, StopDisconnects) {
   WiFiClient client;
   client.connect(IPAddress(8, 8, 8, 8), 80);
   client.stop();
@@ -188,4 +195,27 @@ TEST(IPAddressTest, StringConversion) {
   IPAddress ip(192, 168, 1, 100);
   String s = ip;  // implicit conversion
   EXPECT_STREQ(s.c_str(), "192.168.1.100");
+}
+
+TEST_F(WiFiClientTest, InheritsFromClient) {
+  WiFiClient client;
+  Client *base = &client;
+  EXPECT_NE(base, nullptr);
+  EXPECT_TRUE(base->connect(IPAddress(1, 2, 3, 4), 80));
+}
+
+// WiFiClientSecure tests
+
+TEST(WiFiClientSecureTest, InheritsFromWiFiClient) {
+  WiFiClientSecure secure;
+  WiFiClient *base = &secure;
+  EXPECT_NE(base, nullptr);
+}
+
+TEST(WiFiClientSecureTest, SetInsecureCompiles) {
+  WiFiClientSecure secure;
+  secure.setInsecure();
+  secure.setCACert("cert");
+  secure.setCertificate("cert");
+  secure.setPrivateKey("key");
 }
