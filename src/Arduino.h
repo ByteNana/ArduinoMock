@@ -36,6 +36,10 @@ inline void pinMode(uint8_t /*pin*/, uint8_t /*mode*/) {}
 inline void digitalWrite(uint8_t /*pin*/, uint8_t /*val*/) {}
 inline int digitalRead(uint8_t /*pin*/) { return 0; }
 
+inline void tone(uint8_t /*pin*/, unsigned int /*frequency*/, unsigned long /*duration*/ = 0) {}
+inline void noTone(uint8_t /*pin*/) {}
+inline void setToneChannel(uint8_t /*channel*/ = 0) {}
+
 #include "Esp.h"
 #include "HardwareSerial.h"
 // Arduino math macros
