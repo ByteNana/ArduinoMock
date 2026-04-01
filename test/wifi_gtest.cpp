@@ -225,3 +225,37 @@ TEST(WiFiClientSecureTest, SetInsecureCompiles) {
   secure.setCertificate("cert");
   secure.setPrivateKey("key");
 }
+
+TEST_F(WiFiTest, NoArgBeginReturnsBeginConnects) {
+  EXPECT_TRUE(WiFi.begin());
+  WiFi.setBeginConnects(false);
+  EXPECT_FALSE(WiFi.begin());
+}
+
+TEST(WiFiSoftAPTest, SoftAPReturnsTrue) {
+  EXPECT_TRUE(WiFi.softAP("TestAP"));
+  EXPECT_TRUE(WiFi.softAP("TestAP", "pass123"));
+}
+
+TEST(WiFiSoftAPTest, SoftAPConfigReturnsTrue) {
+  EXPECT_TRUE(WiFi.softAPConfig(
+      IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1), IPAddress(255, 255, 255, 0)));
+}
+
+TEST(WiFiSoftAPTest, SoftAPDisconnectReturnsTrue) { EXPECT_TRUE(WiFi.softAPdisconnect()); }
+
+TEST(WiFiSoftAPTest, SoftAPgetStationNumReturnsZero) { EXPECT_EQ(WiFi.softAPgetStationNum(), 0u); }
+
+TEST(WiFiSoftAPTest, SoftAPIPreturnsDefaultIP) {
+  IPAddress ip = WiFi.softAPIP();
+  EXPECT_EQ(ip[0], 192);
+  EXPECT_EQ(ip[1], 168);
+  EXPECT_EQ(ip[2], 3);
+  EXPECT_EQ(ip[3], 3);
+}
+
+TEST(WiFiSoftAPTest, EnableAPReturnsTrue) { EXPECT_TRUE(WiFi.enableAP(true)); }
+TEST(WiFiSoftAPTest, EnableSTAReturnsTrue) { EXPECT_TRUE(WiFi.enableSTA(true)); }
+TEST(WiFiSoftAPTest, PskReturnsEmptyString) { EXPECT_STREQ(WiFi.psk().c_str(), ""); }
+TEST(WiFiSoftAPTest, GetAutoConnectReturnsTrue) { EXPECT_TRUE(WiFi.getAutoConnect()); }
+TEST(WiFiSoftAPTest, GetAutoReconnectReturnsTrue) { EXPECT_TRUE(WiFi.getAutoReconnect()); }
