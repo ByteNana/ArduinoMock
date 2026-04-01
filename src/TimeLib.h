@@ -1,6 +1,20 @@
 #pragma once
 #include <ctime>
 
+// Cross-platform gmtime wrapper
+#ifdef _MSC_VER
+namespace detail {
+inline struct tm safe_gmtime(const time_t* t) {
+  struct tm r{};
+  gmtime_s(&r, t);
+  return r;
+}
+}  // namespace detail
+#define TIMELIB_GMTIME(t, r) (*(r) = ::detail::safe_gmtime(t))
+#else
+#define TIMELIB_GMTIME(t, r) gmtime_r((t), (r))
+#endif
+
 // --- mock clock state ---
 namespace mock {
 
@@ -26,32 +40,32 @@ inline void setTime(time_t t) { mock::time_offset() = t - std::time(nullptr); }
 
 inline int hour(time_t t) {
   struct tm r{};
-  gmtime_r(&t, &r);
+  TIMELIB_GMTIME(&t, &r);
   return r.tm_hour;
 }
 inline int minute(time_t t) {
   struct tm r{};
-  gmtime_r(&t, &r);
+  TIMELIB_GMTIME(&t, &r);
   return r.tm_min;
 }
 inline int second(time_t t) {
   struct tm r{};
-  gmtime_r(&t, &r);
+  TIMELIB_GMTIME(&t, &r);
   return r.tm_sec;
 }
 inline int day(time_t t) {
   struct tm r{};
-  gmtime_r(&t, &r);
+  TIMELIB_GMTIME(&t, &r);
   return r.tm_mday;
 }
 inline int month(time_t t) {
   struct tm r{};
-  gmtime_r(&t, &r);
+  TIMELIB_GMTIME(&t, &r);
   return r.tm_mon + 1;
 }
 inline int year(time_t t) {
   struct tm r{};
-  gmtime_r(&t, &r);
+  TIMELIB_GMTIME(&t, &r);
   return r.tm_year + 1900;
 }
 

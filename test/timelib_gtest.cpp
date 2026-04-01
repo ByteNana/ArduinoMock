@@ -10,7 +10,7 @@ class TimeLibTest : public ::testing::Test {
 // --- single-argument decomposition ---
 
 TEST_F(TimeLibTest, HourDecomposition) {
-  // 2024-01-15 13:45:30 UTC  →  epoch 1705325130
+  // 2024-01-15 13:25:30 UTC  →  epoch 1705325130
   time_t t = 1705325130;
   EXPECT_EQ(13, hour(t));
 }
