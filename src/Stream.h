@@ -26,15 +26,35 @@ class Stream {
 
   size_t print(unsigned long val, int base) {
     char buf[64];
-    int n = (base == 16)  ? snprintf(buf, sizeof(buf), "%lX", val)
-            : (base == 8) ? snprintf(buf, sizeof(buf), "%lo", val)
-                          : snprintf(buf, sizeof(buf), "%lu", val);
+    int n = 0;
+    if (base == 2) {
+      char tmp[64];
+      int idx = 0;
+      unsigned long v = val;
+      if (v == 0) {
+        tmp[idx++] = '0';
+      } else {
+        while (v != 0 && idx < static_cast<int>(sizeof(tmp))) {
+          tmp[idx++] = (v & 1UL) ? '1' : '0';
+          v >>= 1;
+        }
+      }
+      for (int i = 0; i < idx && i < static_cast<int>(sizeof(buf)); ++i) {
+        buf[i] = tmp[idx - 1 - i];
+      }
+      n = idx;
+    } else {
+      n = (base == 16)  ? snprintf(buf, sizeof(buf), "%lX", val)
+          : (base == 8) ? snprintf(buf, sizeof(buf), "%lo", val)
+                        : snprintf(buf, sizeof(buf), "%lu", val);
+    }
     return write(reinterpret_cast<const uint8_t*>(buf), n > 0 ? static_cast<size_t>(n) : 0);
   }
   size_t print(long val, int base) {
     if (val < 0 && base == 10) {
       size_t n = print("-");
-      return n + print(static_cast<unsigned long>(-val), base);
+      unsigned long magnitude = static_cast<unsigned long>(-(val + 1)) + 1UL;
+      return n + print(magnitude, base);
     }
     return print(static_cast<unsigned long>(val), base);
   }

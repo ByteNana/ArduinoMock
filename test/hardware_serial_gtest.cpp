@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <limits>
+
 #include "HardwareSerial.h"
 
 // --- begin() overloads ---
@@ -175,6 +177,25 @@ TEST(HardwareSerialTest, PrintSignedHex) {
   HardwareSerial s(0);
   s.print(255, HEX);
   EXPECT_EQ(s.getTxData(), "FF");
+}
+
+TEST(HardwareSerialTest, PrintUnsignedBinary) {
+  HardwareSerial s(0);
+  s.print(5u, BIN);
+  EXPECT_EQ(s.getTxData(), "101");
+}
+
+TEST(HardwareSerialTest, PrintZeroBinary) {
+  HardwareSerial s(0);
+  s.print(0u, BIN);
+  EXPECT_EQ(s.getTxData(), "0");
+}
+
+TEST(HardwareSerialTest, PrintLongMinDecimal) {
+  HardwareSerial s(0);
+  s.print(static_cast<long>(std::numeric_limits<long>::min()), DEC);
+  std::string expected = "-" + std::to_string(std::numeric_limits<long>::max() + 1UL);
+  EXPECT_EQ(s.getTxData(), expected);
 }
 
 // --- global instances ---
