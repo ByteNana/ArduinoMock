@@ -157,6 +157,7 @@ class __FlashStringHelper;
 #endif
 
 #include "Stream.h"
+using Print = Stream;
 #include "TimeLib.h"
 #include "WString.h"
 #include "Wire.h"

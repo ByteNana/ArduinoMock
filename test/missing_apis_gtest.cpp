@@ -59,3 +59,33 @@ TEST(GpioConstants, DigitalReadReturnsZero) {
   mockResetGpio();
   EXPECT_EQ(0, digitalRead(4));
 }
+
+// --- Print alias ---
+
+namespace {
+struct TestPrinter : Print {
+  std::string buf;
+  int available() override { return 0; }
+  int read() override { return -1; }
+  int peek() override { return -1; }
+  void flush() override {}
+  size_t write(uint8_t b) override {
+    buf += static_cast<char>(b);
+    return 1;
+  }
+  size_t write(const uint8_t* data, size_t size) override {
+    buf.append(reinterpret_cast<const char*>(data), size);
+    return size;
+  }
+};
+}  // namespace
+
+TEST(PrintAlias, InheritsFromStream) {
+  TestPrinter p;
+  p.print(String("hello"));
+  EXPECT_EQ(p.buf, "hello");
+}
+
+TEST(PrintAlias, PrintAliasIsSameAsStream) {
+  static_assert(std::is_same<Print, Stream>::value, "Print must be an alias for Stream");
+}
