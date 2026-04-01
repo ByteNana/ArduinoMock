@@ -81,9 +81,12 @@ class AlarmClass {
 
   void writeNextTrigger(AlarmID_t id, time_t timestamp) {
     if (id >= MAX_ALARMS) return;
-    auto secs = static_cast<long>(timestamp) - static_cast<long>(std::time(nullptr));
-    _alarms[id].nextFire =
-        std::chrono::steady_clock::now() + std::chrono::seconds(secs > 0 ? secs : 0);
+    const time_t nowTime = std::time(nullptr);
+    const auto steadyNow = std::chrono::steady_clock::now();
+    using SecondsRep = std::chrono::seconds::rep;
+    SecondsRep secs = 0;
+    if (timestamp > nowTime) { secs = static_cast<SecondsRep>(timestamp - nowTime); }
+    _alarms[id].nextFire = steadyNow + std::chrono::seconds(secs);
   }
 
   void reset() {

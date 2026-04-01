@@ -124,7 +124,7 @@ TEST(TimeAlarmsTest, GetNextTriggerReturnsFutureForFreshAlarm) {
 
 TEST(TimeAlarmsTest, GetNextTriggerReturnsZeroForInvalidId) {
   Alarm.reset();
-  EXPECT_EQ(Alarm.getNextTrigger(255), 0);
+  EXPECT_EQ(Alarm.getNextTrigger(dtINVALID_ALARM_ID), 0);
 }
 
 TEST(TimeAlarmsTest, GetNextTriggerReturnsZeroForDisabledAlarm) {
@@ -148,11 +148,12 @@ TEST(TimeAlarmsTest, WriteNextTriggerPastTimestampClampsToNow) {
   Alarm.reset();
   AlarmID_t id = Alarm.timerRepeat(100, nullptr);
   time_t past = std::time(nullptr) - 100;
+  time_t now = std::time(nullptr);
   Alarm.writeNextTrigger(id, past);
-  EXPECT_GE(Alarm.getNextTrigger(id), std::time(nullptr));
+  EXPECT_GE(Alarm.getNextTrigger(id), now);
 }
 
 TEST(TimeAlarmsTest, WriteNextTriggerOutOfRangeIdDoesNotCrash) {
   Alarm.reset();
-  EXPECT_NO_THROW(Alarm.writeNextTrigger(255, std::time(nullptr) + 10));
+  EXPECT_NO_THROW(Alarm.writeNextTrigger(dtINVALID_ALARM_ID, std::time(nullptr) + 10));
 }
