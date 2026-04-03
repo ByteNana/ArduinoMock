@@ -59,7 +59,7 @@ int File::read() {
 }
 
 size_t File::read(uint8_t* buf, size_t size) {
-  if (!_contentPtr || !buf) return 0;
+  if (!_contentPtr || !buf || _readPos >= _contentPtr->size()) return 0;
   size_t available = _contentPtr->size() - _readPos;
   size_t n = size < available ? size : available;
   std::memcpy(buf, _contentPtr->data() + _readPos, n);
