@@ -258,3 +258,52 @@ TEST_F(SPIFFSTest, FMacroCompilesAndPassesThrough) {
   const __FlashStringHelper* fstr = F("world");
   EXPECT_STREQ(reinterpret_cast<const char*>(fstr), "world");
 }
+
+// --- File::read(uint8_t*, size_t) ---
+
+TEST_F(SPIFFSTest, BulkReadReadsExactBytes) {
+  SPIFFS.addFile("/bin.dat", "ABCDE");
+  File f = SPIFFS.open("/bin.dat", FILE_READ);
+  uint8_t buf[3] = {};
+  EXPECT_EQ(f.read(buf, 3), 3u);
+  EXPECT_EQ(buf[0], 'A');
+  EXPECT_EQ(buf[1], 'B');
+  EXPECT_EQ(buf[2], 'C');
+  EXPECT_EQ(f.available(), 2);
+}
+
+TEST_F(SPIFFSTest, BulkReadAdvancesPosition) {
+  SPIFFS.addFile("/seq.dat", "12345");
+  File f = SPIFFS.open("/seq.dat", FILE_READ);
+  uint8_t first[2] = {};
+  uint8_t second[2] = {};
+  f.read(first, 2);
+  f.read(second, 2);
+  EXPECT_EQ(first[0], '1');
+  EXPECT_EQ(first[1], '2');
+  EXPECT_EQ(second[0], '3');
+  EXPECT_EQ(second[1], '4');
+}
+
+TEST_F(SPIFFSTest, BulkReadClampsAtEof) {
+  SPIFFS.addFile("/short.dat", "AB");
+  File f = SPIFFS.open("/short.dat", FILE_READ);
+  uint8_t buf[10] = {};
+  EXPECT_EQ(f.read(buf, 10), 2u);
+  EXPECT_EQ(buf[0], 'A');
+  EXPECT_EQ(buf[1], 'B');
+  EXPECT_EQ(f.available(), 0);
+}
+
+TEST_F(SPIFFSTest, BulkReadAtEofReturnsZero) {
+  SPIFFS.addFile("/empty.dat", "");
+  File f = SPIFFS.open("/empty.dat", FILE_READ);
+  uint8_t buf[4] = {};
+  EXPECT_EQ(f.read(buf, 4), 0u);
+}
+
+TEST_F(SPIFFSTest, BulkReadNullBufReturnsZero) {
+  SPIFFS.addFile("/null.dat", "data");
+  File f = SPIFFS.open("/null.dat", FILE_READ);
+  EXPECT_EQ(f.read(nullptr, 4), 0u);
+}

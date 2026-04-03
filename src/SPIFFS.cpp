@@ -58,6 +58,15 @@ int File::read() {
   return static_cast<uint8_t>((*_contentPtr)[_readPos++]);
 }
 
+size_t File::read(uint8_t* buf, size_t size) {
+  if (!_contentPtr || !buf) return 0;
+  size_t available = _contentPtr->size() - _readPos;
+  size_t n = size < available ? size : available;
+  std::memcpy(buf, _contentPtr->data() + _readPos, n);
+  _readPos += n;
+  return n;
+}
+
 int File::peek() {
   if (!_contentPtr || _readPos >= _contentPtr->size()) return -1;
   return static_cast<uint8_t>((*_contentPtr)[_readPos]);
