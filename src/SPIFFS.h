@@ -25,6 +25,7 @@ class File {
   size_t print(const String& str);
   size_t println(const String& str);
   int read();
+  size_t read(uint8_t* buf, size_t size);
   int peek();
   int available();
   File openNextFile();
