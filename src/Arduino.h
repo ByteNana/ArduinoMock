@@ -216,7 +216,10 @@ inline bool isAlpha(char c) { return isalpha(static_cast<unsigned char>(c)); }
 inline bool isAlphaNumeric(char c) { return isalnum(static_cast<unsigned char>(c)); }
 
 inline char* dtostrf(double val, signed char width, unsigned char prec, char* buf) {
-  std::snprintf(buf, 64, "%*.*f", static_cast<int>(width), static_cast<int>(prec), val);
+  // 64 bytes matches the Arduino reference implementation and is sufficient
+  // for any double with reasonable width/precision values.
+  constexpr size_t kBufMax = 64;
+  std::snprintf(buf, kBufMax, "%*.*f", static_cast<int>(width), static_cast<int>(prec), val);
   return buf;
 }
 
