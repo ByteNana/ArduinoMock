@@ -16,18 +16,23 @@ jobs:
   create-rc:
     runs-on: ubuntu-latest
     steps:
+      - name: Validate version format
+        run: |
+          if ! echo "${{ inputs.version }}" | grep -qP '^\d+\.\d+\.\d+$'; then
+            echo "::error::version must be x.y.z (got: ${{ inputs.version }})"
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-
-      - name: Install bump-my-version
-        run: pip install bump-my-version
 
       - uses: Bytenana-Actions/create-rc@v0
         with:
           version: ${{ inputs.version }}
           base-branch: master
           bump-command: |
-            bump-my-version bump --new-version $VERSION --no-commit && bump-my-version bump pre_n --no-commit
+            sed -i "s/project(ArduinoNativeMocks VERSION [0-9][0-9.]*/project(ArduinoNativeMocks VERSION $VERSION/" CMakeLists.txt
+            sed -i "s/set(PROJECT_VERSION_SUFIX \"[^\"]*\")/set(PROJECT_VERSION_SUFIX \"-rc.1\")/" CMakeLists.txt
           token: ${{ secrets.GITHUB_TOKEN }}
