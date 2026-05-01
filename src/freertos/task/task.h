@@ -39,6 +39,9 @@ void vTaskDelete(TaskHandle_t xTask);
 
 void vTaskDelay(const TickType_t xTicksToDelay);
 
+void vTaskSuspend(TaskHandle_t xTaskToSuspend);
+void vTaskResume(TaskHandle_t xTaskToResume);
+
 inline void vTaskDelayUntil(TickType_t* pxPreviousWakeTime, const TickType_t xTimeIncrement) {
   vTaskDelay(xTimeIncrement);
   if (pxPreviousWakeTime != NULL) *pxPreviousWakeTime += xTimeIncrement;
