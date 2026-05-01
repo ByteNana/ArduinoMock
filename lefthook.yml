@@ -15,3 +15,5 @@ pre-push:
       run: .githooks/branch-protection.sh {push_args}
     version-validation:
       run: .githooks/version-validation.sh
+    clang-tidy:
+      run: make tidy
