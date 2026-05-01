@@ -13,9 +13,9 @@
 #endif
 
 // Arduino type definitions
-typedef bool boolean;
-typedef uint8_t byte;
-typedef uint16_t word;
+using boolean = bool;
+using byte = uint8_t;
+using word = uint16_t;
 
 #ifndef PROGMEM
 #define PROGMEM
@@ -191,7 +191,7 @@ inline long map(long x, long in_min, long in_max, long out_min, long out_max) {
 #include "freertos/FreeRTOS.h"
 #include "times.h"
 
-inline bool isSpace(char c) { return isspace(static_cast<unsigned char>(c)); }
+inline bool isSpace(char c) { return isspace(static_cast<unsigned char>(c)) != 0; }
 
 inline bool isHexadecimalDigit(char c) {
   return isdigit(static_cast<unsigned char>(c)) || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
@@ -209,11 +209,11 @@ inline constexpr auto max(T a, U b) -> typename std::common_type<T, U>::type {
   return (a > b) ? R(a) : R(b);
 }
 
-inline bool isDigit(char c) { return isdigit(static_cast<unsigned char>(c)); }
+inline bool isDigit(char c) { return isdigit(static_cast<unsigned char>(c)) != 0; }
 
-inline bool isAlpha(char c) { return isalpha(static_cast<unsigned char>(c)); }
+inline bool isAlpha(char c) { return isalpha(static_cast<unsigned char>(c)) != 0; }
 
-inline bool isAlphaNumeric(char c) { return isalnum(static_cast<unsigned char>(c)); }
+inline bool isAlphaNumeric(char c) { return isalnum(static_cast<unsigned char>(c)) != 0; }
 
 inline char* dtostrf(double val, signed char width, unsigned char prec, char* buf) {
   // 64 bytes matches the Arduino reference implementation and is sufficient
