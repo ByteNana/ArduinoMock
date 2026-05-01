@@ -33,6 +33,6 @@ jobs:
           version: ${{ inputs.version }}
           base-branch: master
           bump-command: |
-            sed -i "s/project(ArduinoNativeMocks VERSION [^ ]*/project(ArduinoNativeMocks VERSION $VERSION/" CMakeLists.txt
+            sed -i "s/project(ArduinoNativeMocks VERSION [0-9][0-9.]*/project(ArduinoNativeMocks VERSION $VERSION/" CMakeLists.txt
             sed -i "s/set(PROJECT_VERSION_SUFIX \"[^\"]*\")/set(PROJECT_VERSION_SUFIX \"-rc.1\")/" CMakeLists.txt
           token: ${{ secrets.GITHUB_TOKEN }}

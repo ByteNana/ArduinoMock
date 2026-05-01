@@ -13,7 +13,6 @@ namespace {
 struct TaskImpl {
   std::thread th;
   std::atomic<bool> cancel{false};
-  std::atomic<bool> suspended{false};
   std::mutex mtx;
   std::condition_variable cv;
   std::string name;
@@ -86,12 +85,8 @@ void vTaskDelay(const TickType_t xTicksToDelay) {
     if (impl->cancel.load()) throw TaskExitException();
     return;
   }
-  impl->cv.wait_for(lk, std::chrono::milliseconds(xTicksToDelay), [impl]() {
-    return impl->cancel.load() || impl->suspended.load();
-  });
-  if (impl->cancel.load()) throw TaskExitException();
-  // suspend gate — parks here when suspended from outside
-  impl->cv.wait(lk, [impl]() { return !impl->suspended.load() || impl->cancel.load(); });
+  impl->cv.wait_for(
+      lk, std::chrono::milliseconds(xTicksToDelay), [impl]() { return impl->cancel.load(); });
   if (impl->cancel.load()) throw TaskExitException();
 }
 
@@ -165,26 +160,5 @@ uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit, TickType_t xTicksToWait)
 }
 
 size_t xPortGetFreeHeapSize(void) { return 1024 * 1024; }
-
-void vTaskSuspend(TaskHandle_t xTaskToSuspend) {
-  TaskImpl* impl = reinterpret_cast<TaskImpl*>(xTaskToSuspend);
-  if (impl == nullptr) impl = tls_current_task;
-  if (!impl) return;
-  impl->suspended.store(true);
-  if (impl == tls_current_task) {
-    std::unique_lock<std::mutex> lk(impl->mtx);
-    impl->cv.wait(lk, [impl]() { return !impl->suspended.load() || impl->cancel.load(); });
-    if (impl->cancel.load()) throw TaskExitException();
-  } else {
-    notify_task(impl);  // wake it so it reaches the suspend gate in vTaskDelay
-  }
-}
-
-void vTaskResume(TaskHandle_t xTaskToResume) {
-  TaskImpl* impl = reinterpret_cast<TaskImpl*>(xTaskToResume);
-  if (!impl) return;
-  impl->suspended.store(false);
-  notify_task(impl);
-}
 
 }  // extern "C"

@@ -277,26 +277,20 @@ class String {
 inline bool operator==(const char* lhs, const String& rhs) { return rhs == lhs; }
 inline bool operator!=(const char* lhs, const String& rhs) { return rhs != lhs; }
 
-class StringSumHelper : public String {
- public:
-  StringSumHelper(const String& s) : String(s) {}
-  StringSumHelper(const char* s) : String(s) {}
-};
-
-inline StringSumHelper operator+(const String& lhs, const String& rhs) {
-  StringSumHelper result(lhs);
+inline String operator+(const String& lhs, const String& rhs) {
+  String result(lhs);
   result += rhs;
   return result;
 }
 
-inline StringSumHelper operator+(const String& lhs, const char* rhs) {
-  StringSumHelper result(lhs);
+inline String operator+(const String& lhs, const char* rhs) {
+  String result(lhs);
   result += rhs;
   return result;
 }
 
-inline StringSumHelper operator+(const char* lhs, const String& rhs) {
-  StringSumHelper result(lhs);
+inline String operator+(const char* lhs, const String& rhs) {
+  String result(lhs);
   result += rhs;
   return result;
 }
