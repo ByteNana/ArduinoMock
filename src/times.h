@@ -3,8 +3,8 @@
 #include <chrono>
 #include <thread>
 
-inline auto& getTimeStart() {
-  static auto time_start = std::chrono::steady_clock::now();
+inline std::chrono::steady_clock::time_point& getTimeStart() {
+  static std::chrono::steady_clock::time_point time_start = std::chrono::steady_clock::now();
   return time_start;
 }
 

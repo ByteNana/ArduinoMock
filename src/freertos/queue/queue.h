@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-typedef struct QueueControlBlock* QueueHandle_t;
+typedef struct QueueControlBlock* QueueHandle_t;  // NOLINT(modernize-use-using)
 
 QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize);
 void vQueueDelete(QueueHandle_t xQueue);

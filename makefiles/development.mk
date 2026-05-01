@@ -62,6 +62,20 @@ format:
 	clang-format -i $$files; \
 	printf "\033[1;32m✔ All files properly formatted\033[0m\n";
 
+## Run clang-tidy on all src/ translation units
+tidy:
+	@printf "\n\033[1;33m🔍 Running clang-tidy\033[0m\n\n"
+	@cmake --preset gmock -DLOG_LEVEL=$(LOG_LEVEL) > /dev/null 2>&1
+	@sed -i.bak 's/ -arch [^ ]*//g' $(BUILD_DIR)/compile_commands.json && rm -f $(BUILD_DIR)/compile_commands.json.bak
+	@files="$$(find src -type f -name '*.cpp' | sort)"; \
+	if [ "$$(uname -s)" = "Darwin" ]; then \
+		sysroot=$$(xcrun --show-sdk-path 2>/dev/null); \
+		clang-tidy -p $(BUILD_DIR) --extra-arg=-isysroot --extra-arg="$$sysroot" $$files || exit 1; \
+	else \
+		clang-tidy -p $(BUILD_DIR) --extra-arg=--gcc-toolchain=/usr $$files || exit 1; \
+	fi; \
+	printf "\033[1;32m✔ clang-tidy passed\033[0m\n"
+
 ## Check code formatting using clang-format
 check:
 	@printf "\n\033[1;33m🔍 Checking formatting\033[0m\n\n"

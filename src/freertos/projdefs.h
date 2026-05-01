@@ -2,11 +2,11 @@
 
 #include <stdint.h>
 
-typedef int BaseType_t;
-typedef unsigned int UBaseType_t;
-typedef uint32_t TickType_t;
-typedef short portSHORT;
-typedef uint32_t portSTACK_TYPE;
+typedef int BaseType_t;            // NOLINT(modernize-use-using)
+typedef unsigned int UBaseType_t;  // NOLINT(modernize-use-using)
+typedef uint32_t TickType_t;       // NOLINT(modernize-use-using)
+typedef short portSHORT;           // NOLINT(modernize-use-using)
+typedef uint32_t portSTACK_TYPE;   // NOLINT(modernize-use-using)
 
 #ifndef pdTRUE
 #define pdTRUE 1

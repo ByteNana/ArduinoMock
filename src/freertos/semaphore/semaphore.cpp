@@ -20,13 +20,13 @@ SemaphoreHandle_t xSemaphoreCreateMutex(void) {
 }
 
 void vSemaphoreDelete(SemaphoreHandle_t xSemaphore) {
-  if (!xSemaphore) return;
+  if (xSemaphore == nullptr) return;
   delete xSemaphore;
 }
 
 BaseType_t xSemaphoreGive(SemaphoreHandle_t xSemaphore) {
   auto* s = xSemaphore;
-  if (!s) return pdFALSE;
+  if (s == nullptr) return pdFALSE;
   std::lock_guard<std::mutex> lk(s->mtx);
   if (s->available) return pdTRUE;  // already available
   s->available = true;
@@ -36,7 +36,7 @@ BaseType_t xSemaphoreGive(SemaphoreHandle_t xSemaphore) {
 
 BaseType_t xSemaphoreTake(SemaphoreHandle_t xSemaphore, TickType_t xTicksToWait) {
   auto* s = xSemaphore;
-  if (!s) return pdFALSE;
+  if (s == nullptr) return pdFALSE;
   std::unique_lock<std::mutex> lk(s->mtx);
   if (!s->available) {
     if (xTicksToWait == 0) return pdFALSE;
