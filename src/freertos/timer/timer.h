@@ -5,8 +5,8 @@
 
 #include "freertos/projdefs.h"
 
-typedef void* TimerHandle_t;
-typedef void (*TimerCallbackFunction_t)(TimerHandle_t);
+typedef void* TimerHandle_t;                             // NOLINT(modernize-use-using)
+typedef void (*TimerCallbackFunction_t)(TimerHandle_t);  // NOLINT(modernize-use-using)
 
 #ifdef __cplusplus
 extern "C" {

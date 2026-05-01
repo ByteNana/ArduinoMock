@@ -10,12 +10,12 @@ File::File(std::string* contentPtr, const std::string& name, const std::string& 
 File::operator bool() const { return _open && _contentPtr != nullptr; }
 
 String File::readString() {
-  if (!_contentPtr) return String("");
+  if (_contentPtr == nullptr) return String("");
   return String(_contentPtr->c_str());
 }
 
 String File::readStringUntil(char terminator) {
-  if (!_contentPtr) return String("");
+  if (_contentPtr == nullptr) return String("");
   std::string result;
   while (_readPos < _contentPtr->size()) {
     char c = (*_contentPtr)[_readPos++];
@@ -26,19 +26,19 @@ String File::readStringUntil(char terminator) {
 }
 
 size_t File::write(uint8_t c) {
-  if (!_contentPtr) return 0;
+  if (_contentPtr == nullptr) return 0;
   _contentPtr->push_back(static_cast<char>(c));
   return 1;
 }
 
 size_t File::write(const uint8_t* buf, size_t size) {
-  if (!_contentPtr || !buf) return 0;
+  if (_contentPtr == nullptr || buf == nullptr) return 0;
   _contentPtr->append(reinterpret_cast<const char*>(buf), size);
   return size;
 }
 
 size_t File::print(const char* str) {
-  if (!_contentPtr || !str) return 0;
+  if (_contentPtr == nullptr || str == nullptr) return 0;
   size_t len = strlen(str);
   _contentPtr->append(str, len);
   return len;
@@ -46,7 +46,7 @@ size_t File::print(const char* str) {
 
 size_t File::println(const char* str) {
   size_t n = print(str);
-  if (_contentPtr) {
+  if (_contentPtr != nullptr) {
     _contentPtr->push_back('\n');
     n++;
   }
@@ -54,12 +54,12 @@ size_t File::println(const char* str) {
 }
 
 int File::read() {
-  if (!_contentPtr || _readPos >= _contentPtr->size()) return -1;
+  if (_contentPtr == nullptr || _readPos >= _contentPtr->size()) return -1;
   return static_cast<uint8_t>((*_contentPtr)[_readPos++]);
 }
 
 size_t File::read(uint8_t* buf, size_t size) {
-  if (!_contentPtr || !buf || _readPos >= _contentPtr->size()) return 0;
+  if (_contentPtr == nullptr || buf == nullptr || _readPos >= _contentPtr->size()) return 0;
   size_t available = _contentPtr->size() - _readPos;
   size_t n = size < available ? size : available;
   std::memcpy(buf, _contentPtr->data() + _readPos, n);
@@ -68,12 +68,12 @@ size_t File::read(uint8_t* buf, size_t size) {
 }
 
 int File::peek() {
-  if (!_contentPtr || _readPos >= _contentPtr->size()) return -1;
+  if (_contentPtr == nullptr || _readPos >= _contentPtr->size()) return -1;
   return static_cast<uint8_t>((*_contentPtr)[_readPos]);
 }
 
 int File::available() {
-  if (!_contentPtr) return 0;
+  if (_contentPtr == nullptr) return 0;
   if (_readPos >= _contentPtr->size()) return 0;
   return static_cast<int>(_contentPtr->size() - _readPos);
 }
@@ -86,7 +86,7 @@ File File::openNextFile() { return File(); }
 
 String File::name() { return String(_name.c_str()); }
 
-size_t File::size() { return _contentPtr ? _contentPtr->size() : 0; }
+size_t File::size() { return (_contentPtr != nullptr) ? _contentPtr->size() : 0; }
 
 void File::close() {
   _open = false;
@@ -105,7 +105,7 @@ bool MockSPIFFS::begin(bool formatOnFail, const char*, uint8_t) { return begin(f
 void MockSPIFFS::end() { _mounted = false; }
 
 File MockSPIFFS::open(const char* path, const char* mode) {
-  std::string m = mode ? mode : FILE_READ;
+  std::string m = (mode != nullptr) ? mode : FILE_READ;
 
   if (m == FILE_WRITE) {
     _files[path] = "";
@@ -113,12 +113,12 @@ File MockSPIFFS::open(const char* path, const char* mode) {
   }
 
   if (m == FILE_APPEND) {
-    if (!_files.count(path)) _files[path] = "";
+    if (_files.count(path) == 0) _files[path] = "";
     return File(&_files[path], path, m);
   }
 
   // Read mode
-  if (!_files.count(path)) return File();
+  if (_files.count(path) == 0) return File();
   return File(&_files[path], path, m);
 }
 
@@ -129,7 +129,7 @@ bool MockSPIFFS::exists(const String& path) { return exists(path.c_str()); }
 File MockSPIFFS::open(const String& path, const char* mode) { return open(path.c_str(), mode); }
 
 bool MockSPIFFS::remove(const char* path) {
-  if (!_files.count(path)) return false;
+  if (_files.count(path) == 0) return false;
   _files.erase(path);
   return true;
 }
@@ -137,7 +137,7 @@ bool MockSPIFFS::remove(const char* path) {
 bool MockSPIFFS::remove(const String& path) { return remove(path.c_str()); }
 
 bool MockSPIFFS::rename(const char* from, const char* to) {
-  if (!_files.count(from)) return false;
+  if (_files.count(from) == 0) return false;
   _files[to] = _files[from];
   _files.erase(from);
   return true;

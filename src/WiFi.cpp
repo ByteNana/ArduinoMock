@@ -5,6 +5,7 @@
 #include <net/if.h>
 #include <netinet/in.h>
 
+#include <array>
 #include <cstring>
 
 int32_t WiFiClass::RSSI() { return _rssi; }
@@ -27,14 +28,14 @@ IPAddress WiFiClass::localIP() {
 
   IPAddress result;
 
-  for (auto* ifa = ifaddr; ifa; ifa = ifa->ifa_next) {
-    if (!ifa->ifa_addr) continue;
+  for (auto* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+    if (ifa->ifa_addr == nullptr) continue;
 
     if (ifa->ifa_addr->sa_family != AF_INET) continue;
 
-    if (!(ifa->ifa_flags & IFF_UP)) continue;
+    if ((ifa->ifa_flags & IFF_UP) == 0U) continue;
 
-    if (ifa->ifa_flags & IFF_LOOPBACK) continue;
+    if ((ifa->ifa_flags & IFF_LOOPBACK) != 0U) continue;
 
     auto* sa = reinterpret_cast<sockaddr_in*>(ifa->ifa_addr);
     uint32_t addr = ntohl(sa->sin_addr.s_addr);
@@ -57,23 +58,23 @@ String WiFiClass::macAddress() {
       "'A-F'",
       "r");
 #endif
-  if (!pipe) return String("00:00:00:00:00:00");
+  if (pipe == nullptr) return String("00:00:00:00:00:00");
 
-  char buf[18] = {0};
-  fgets(buf, sizeof(buf), pipe);
+  std::array<char, 18> buf{};
+  fgets(buf.data(), static_cast<int>(buf.size()), pipe);
   pclose(pipe);
 
   // Trim newline
-  buf[strcspn(buf, "\n")] = 0;
-  return String(buf);
+  buf[strcspn(buf.data(), "\n")] = '\0';
+  return String(buf.data());
 }
 
 void WiFiClass::macAddress(uint8_t* mac) {
-  if (mac) std::memset(mac, 0, 6);
+  if (mac != nullptr) std::memset(mac, 0, 6);
 }
 
 bool WiFiClass::begin(const char* ssid, const char* password) {
-  _ssid = ssid ? ssid : "";
+  _ssid = (ssid != nullptr) ? ssid : "";
   if (_beginConnects) {
     _status = WL_CONNECTED;
     return true;

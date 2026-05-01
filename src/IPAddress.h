@@ -2,6 +2,7 @@
 
 #include <WString.h>
 
+#include <array>
 #include <cstdint>
 
 class IPAddress {
@@ -38,6 +39,6 @@ class IPAddress {
   }
 
  private:
-  uint8_t* raw_address() { return _address; }
-  uint8_t _address[4];
+  uint8_t* raw_address() { return _address.data(); }
+  std::array<uint8_t, 4> _address;
 };

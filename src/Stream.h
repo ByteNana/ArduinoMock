@@ -12,7 +12,7 @@ class Stream : public Print {
 
  public:
   Stream(unsigned long timeout = 1000) : _startMillis(0), _timeout(timeout) {}
-  virtual ~Stream() = default;
+  ~Stream() override = default;
 
   virtual int available() = 0;
   virtual int read() = 0;
@@ -72,12 +72,12 @@ class Stream : public Print {
     bool negative = false;
     long value = 0;
     int c;
-    while ((c = timedRead()) >= 0 && !isdigit(c) && c != '-') {}
+    while ((c = timedRead()) >= 0 && (isdigit(c) == 0) && c != '-') {}
     if (c == '-') {
       negative = true;
       c = timedRead();
     }
-    while (c >= 0 && isdigit(c)) {
+    while (c >= 0 && (isdigit(c) != 0)) {
       value = value * 10 + (c - '0');
       c = timedRead();
     }
@@ -90,12 +90,12 @@ class Stream : public Print {
     float fraction = 1.0f;
     bool inFraction = false;
     int c;
-    while ((c = timedRead()) >= 0 && !isdigit(c) && c != '-' && c != '.') {}
+    while ((c = timedRead()) >= 0 && (isdigit(c) == 0) && c != '-' && c != '.') {}
     if (c == '-') {
       negative = true;
       c = timedRead();
     }
-    while (c >= 0 && (isdigit(c) || c == '.')) {
+    while (c >= 0 && ((isdigit(c) != 0) || c == '.')) {
       if (c == '.') {
         inFraction = true;
       } else if (!inFraction) {

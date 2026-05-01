@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-typedef struct SemaphoreControlBlock* SemaphoreHandle_t;
+typedef struct SemaphoreControlBlock* SemaphoreHandle_t;  // NOLINT(modernize-use-using)
 
 SemaphoreHandle_t xSemaphoreCreateBinary(void);
 SemaphoreHandle_t xSemaphoreCreateMutex(void);

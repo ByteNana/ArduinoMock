@@ -1,0 +1,13 @@
+---
+Checks: >
+  modernize-use-using,
+  modernize-use-override,
+  readability-implicit-bool-conversion,
+  readability-static-definition-in-anonymous-namespace,
+  performance-enum-size,
+  performance-avoid-endl,
+  cppcoreguidelines-avoid-c-arrays,
+  cppcoreguidelines-explicit-virtual-functions
+
+HeaderFilterRegex: 'src/.*'
+WarningsAsErrors: '*'

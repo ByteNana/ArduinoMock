@@ -5,13 +5,8 @@
 
 #include "freertos/projdefs.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef void (*TaskFunction_t)(void*);
-
-typedef struct TaskControlBlock* TaskHandle_t;
+typedef void (*TaskFunction_t)(void*);          // NOLINT(modernize-use-using)
+typedef struct TaskControlBlock* TaskHandle_t;  // NOLINT(modernize-use-using)
 
 // Priorities
 #ifndef tskIDLE_PRIORITY
@@ -23,13 +18,17 @@ typedef struct TaskControlBlock* TaskHandle_t;
 #endif
 
 // Task notification actions
-typedef enum {
+typedef enum {  // NOLINT(modernize-use-using,performance-enum-size)
   eNoAction,
   eSetBits,
   eIncrement,
   eSetValueWithOverwrite,
   eSetValueWithoutOverwrite
 } eNotifyAction;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // API
 BaseType_t xTaskCreate(
@@ -40,9 +39,12 @@ void vTaskDelete(TaskHandle_t xTask);
 
 void vTaskDelay(const TickType_t xTicksToDelay);
 
+void vTaskSuspend(TaskHandle_t xTaskToSuspend);
+void vTaskResume(TaskHandle_t xTaskToResume);
+
 inline void vTaskDelayUntil(TickType_t* pxPreviousWakeTime, const TickType_t xTimeIncrement) {
   vTaskDelay(xTimeIncrement);
-  if (pxPreviousWakeTime) *pxPreviousWakeTime += xTimeIncrement;
+  if (pxPreviousWakeTime != NULL) *pxPreviousWakeTime += xTimeIncrement;
 }
 
 void vTaskStartScheduler(void);
