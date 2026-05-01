@@ -25,7 +25,7 @@ TimerHandle_t xTimerCreate(
     const char* name, uint32_t periodTicks, BaseType_t autoReload, void* timerID,
     TimerCallbackFunction_t callback) {
   MockTimer* t = new MockTimer();
-  t->name = name ? name : "";
+  t->name = (name != nullptr) ? name : "";
   t->period = periodTicks;
   t->autoReload = (autoReload != 0);
   t->active = false;
@@ -73,7 +73,7 @@ BaseType_t xTimerIsTimerActive(TimerHandle_t timer) {
   if (!t->active) return pdFALSE;
 
   if (std::chrono::steady_clock::now() >= t->fireAt) {
-    if (t->callback) t->callback(static_cast<TimerHandle_t>(t));
+    if (t->callback != nullptr) t->callback(static_cast<TimerHandle_t>(t));
     if (t->autoReload) {
       t->fireAt = fireAtFromNow(t->period);
     } else {
@@ -96,7 +96,7 @@ const char* pcTimerGetName(TimerHandle_t timer) {
 
 void mockProcessTimers() {
   for (size_t i = 0; i < timers.size(); i++) {
-    if (timers[i]->active && timers[i]->callback) {
+    if (timers[i]->active && timers[i]->callback != nullptr) {
       timers[i]->callback(static_cast<TimerHandle_t>(timers[i]));
       if (!timers[i]->autoReload) timers[i]->active = false;
     }
@@ -105,7 +105,7 @@ void mockProcessTimers() {
 
 void mockFireTimer(TimerHandle_t timer) {
   MockTimer* t = static_cast<MockTimer*>(timer);
-  if (t->callback) {
+  if (t->callback != nullptr) {
     t->callback(timer);
     if (!t->autoReload) t->active = false;
   }

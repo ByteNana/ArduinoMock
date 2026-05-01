@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <cstring>
 
@@ -9,7 +10,7 @@
 
 class EEPROMClass {
  public:
-  EEPROMClass() { memset(_buffer, 0xFF, sizeof(_buffer)); }
+  EEPROMClass() { _buffer.fill(0xFF); }
 
   void begin(size_t size) { _size = size; }
   uint8_t read(int address) { return _buffer[address]; }
@@ -18,27 +19,27 @@ class EEPROMClass {
 
   template <typename T>
   T& get(int address, T& data) {
-    memcpy(&data, _buffer + address, sizeof(T));
+    memcpy(&data, _buffer.data() + address, sizeof(T));
     return data;
   }
 
   template <typename T>
   void put(int address, const T& data) {
-    memcpy(_buffer + address, &data, sizeof(T));
+    memcpy(_buffer.data() + address, &data, sizeof(T));
   }
 
   size_t length() { return _size; }
 
   // Test helpers
   void reset() {
-    memset(_buffer, 0xFF, sizeof(_buffer));
+    _buffer.fill(0xFF);
     _size = MOCK_EEPROM_SIZE;
   }
-  uint8_t* raw() { return _buffer; }
+  uint8_t* raw() { return _buffer.data(); }
   size_t size() { return _size; }
 
  private:
-  uint8_t _buffer[MOCK_EEPROM_SIZE];
+  std::array<uint8_t, MOCK_EEPROM_SIZE> _buffer;
   size_t _size = MOCK_EEPROM_SIZE;
 };
 

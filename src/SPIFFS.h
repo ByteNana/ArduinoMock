@@ -57,7 +57,7 @@ class MockSPIFFS {
   // Test helpers
   void setMounted(bool v) { _canMount = v; }
   void addFile(const char* path, const std::string& content) { _files[path] = content; }
-  std::string getFile(const char* path) { return _files.count(path) ? _files[path] : ""; }
+  std::string getFile(const char* path) { return (_files.count(path) != 0u) ? _files[path] : ""; }
   void clear() { _files.clear(); }
   void reset() {
     _files.clear();

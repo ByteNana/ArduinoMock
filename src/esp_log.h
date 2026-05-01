@@ -1,12 +1,14 @@
 #pragma once
 
+#include <array>
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 #include <iostream>
 #include <mutex>
 #include <string>
 
-enum LogLevel {
+enum LogLevel : uint8_t {
   LOG_LEVEL_NONE = 0,
   LOG_LEVEL_ERROR = 1,
   LOG_LEVEL_WARN = 2,
@@ -26,7 +28,7 @@ enum LogLevel {
 #define LOG_COLOR_GRAY "\x1b[37m"
 #define LOG_COLOR_RESET "\x1b[0m"
 
-static char s_log_buffer[1024];
+static std::array<char, 1024> s_log_buffer;
 static std::mutex s_log_output_mutex;
 
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
@@ -42,17 +44,16 @@ static inline void _log_write(
 
   va_list args;
   va_start(args, fmt);
-  int result = vsnprintf(s_log_buffer, sizeof(s_log_buffer), fmt, args);
+  int result = vsnprintf(s_log_buffer.data(), s_log_buffer.size(), fmt, args);
   va_end(args);
 
   if (result < 0) {
-    std::cerr << LOG_COLOR_RED << "[ERROR]" << LOG_COLOR_RESET << " Log formatting failed!"
-              << std::endl;
+    std::cerr << LOG_COLOR_RED << "[ERROR]" << LOG_COLOR_RESET << " Log formatting failed!" << '\n';
   } else {
-    std::cout << s_log_buffer;
+    std::cout << s_log_buffer.data();
   }
 
-  std::cout << LOG_COLOR_RESET << std::endl;
+  std::cout << LOG_COLOR_RESET << '\n';
 }
 
 #define log_e(fmt, ...) \

@@ -27,13 +27,13 @@ QueueHandle_t xQueueCreate(UBaseType_t uxQueueLength, UBaseType_t uxItemSize) {
 
 void vQueueDelete(QueueHandle_t xQueue) {
   auto* q = xQueue;
-  if (!q) return;
+  if (q == nullptr) return;
   delete q;
 }
 
 BaseType_t xQueueSend(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) {
   auto* q = xQueue;
-  if (!q || !pvItemToQueue) return pdFALSE;
+  if (q == nullptr || pvItemToQueue == nullptr) return pdFALSE;
   std::unique_lock<std::mutex> lk(q->mtx);
   auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(xTicksToWait);
   while (q->q.size() >= q->capacity) {
@@ -52,7 +52,7 @@ BaseType_t xQueueSend(QueueHandle_t xQueue, const void* pvItemToQueue, TickType_
 
 BaseType_t xQueueReceive(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicksToWait) {
   auto* q = xQueue;
-  if (!q || !pvBuffer) return pdFALSE;
+  if (q == nullptr || pvBuffer == nullptr) return pdFALSE;
   std::unique_lock<std::mutex> lk(q->mtx);
   auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(xTicksToWait);
   while (q->q.empty()) {
@@ -71,7 +71,7 @@ BaseType_t xQueueReceive(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicks
 
 UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue) {
   auto* q = xQueue;
-  if (!q) return 0;
+  if (q == nullptr) return 0;
   std::lock_guard<std::mutex> lk(q->mtx);
   return static_cast<UBaseType_t>(q->q.size());
 }
@@ -84,7 +84,7 @@ BaseType_t xQueueSendToBack(
 BaseType_t xQueueSendToFront(
     QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) {
   auto* q = xQueue;
-  if (!q || !pvItemToQueue) return pdFALSE;
+  if (q == nullptr || pvItemToQueue == nullptr) return pdFALSE;
   std::unique_lock<std::mutex> lk(q->mtx);
   auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(xTicksToWait);
   while (q->q.size() >= q->capacity) {
@@ -103,7 +103,7 @@ BaseType_t xQueueSendToFront(
 
 BaseType_t xQueuePeek(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicksToWait) {
   auto* q = xQueue;
-  if (!q || !pvBuffer) return pdFALSE;
+  if (q == nullptr || pvBuffer == nullptr) return pdFALSE;
   std::unique_lock<std::mutex> lk(q->mtx);
   auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(xTicksToWait);
   while (q->q.empty()) {

@@ -9,15 +9,15 @@
 #include "IPAddress.h"
 
 // WiFi mode — matches ESP32 Arduino Core wifi_mode_t values
-typedef enum {
+enum wifi_mode_t : uint8_t {
   WIFI_OFF = 0,
   WIFI_STA = 1,
   WIFI_AP = 2,
   WIFI_AP_STA = 3,
-} wifi_mode_t;
+};
 
 // Values match ESP32 Arduino Core wifi_sta_status_t
-typedef enum {
+enum wl_status_t : uint8_t {
   WL_IDLE_STATUS = 0,
   WL_NO_SSID_AVAIL = 1,
   WL_SCAN_COMPLETED = 2,
@@ -25,9 +25,9 @@ typedef enum {
   WL_CONNECT_FAILED = 4,
   WL_CONNECTION_LOST = 5,
   WL_DISCONNECTED = 6
-} wl_status_t;
+};
 
-typedef std::function<void(int)> WiFiEventSysCb;
+using WiFiEventSysCb = std::function<void(int)>;
 
 struct MockScanResult {
   std::string ssid;

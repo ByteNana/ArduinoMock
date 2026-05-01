@@ -30,7 +30,7 @@ std::chrono::steady_clock::time_point g_scheduler_start;
 struct TaskExitException {};
 
 inline void notify_task(TaskImpl* t) {
-  if (!t) return;
+  if (t == nullptr) return;
   std::lock_guard<std::mutex> lk(t->mtx);
   t->cv.notify_all();
 }
@@ -42,7 +42,7 @@ BaseType_t xTaskCreate(
     TaskFunction_t pxTaskCode, const char* const pcName, const uint32_t /*usStackDepth*/,
     void* const pvParameters, UBaseType_t uxPriority, TaskHandle_t* const pxCreatedTask) {
   TaskImpl* impl = new TaskImpl();
-  impl->name = pcName ? pcName : "task";
+  impl->name = (pcName != nullptr) ? pcName : "task";
   impl->priority = uxPriority;
   try {
     impl->th = std::thread([impl, pxTaskCode, pvParameters]() {
@@ -58,7 +58,7 @@ BaseType_t xTaskCreate(
     delete impl;
     return pdFALSE;
   }
-  if (pxCreatedTask) { *pxCreatedTask = reinterpret_cast<TaskHandle_t>(impl); }
+  if (pxCreatedTask != nullptr) { *pxCreatedTask = reinterpret_cast<TaskHandle_t>(impl); }
   return pdPASS;
 }
 
@@ -76,7 +76,7 @@ void vTaskDelete(TaskHandle_t xTask) {
 
 void vTaskDelay(const TickType_t xTicksToDelay) {
   TaskImpl* impl = tls_current_task;
-  if (!impl) {
+  if (impl == nullptr) {
     // Not called from a task thread; just sleep
     std::this_thread::sleep_for(std::chrono::milliseconds(xTicksToDelay));
     return;
@@ -110,7 +110,7 @@ TickType_t xTaskGetTickCount(void) {
 
 BaseType_t xTaskNotify(TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyAction eAction) {
   TaskImpl* impl = reinterpret_cast<TaskImpl*>(xTaskToNotify);
-  if (!impl) return pdFALSE;
+  if (impl == nullptr) return pdFALSE;
   {
     std::lock_guard<std::mutex> lk(impl->mtx);
     switch (eAction) {
@@ -145,7 +145,7 @@ BaseType_t xTaskNotify(TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyActi
 
 uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit, TickType_t xTicksToWait) {
   TaskImpl* impl = tls_current_task;
-  if (!impl) return 0;
+  if (impl == nullptr) return 0;
   std::unique_lock<std::mutex> lk(impl->mtx);
   auto pred = [impl]() { return impl->notificationValue > 0 || impl->cancel.load(); };
   if (xTicksToWait == portMAX_DELAY) {
@@ -169,7 +169,7 @@ size_t xPortGetFreeHeapSize(void) { return 1024 * 1024; }
 void vTaskSuspend(TaskHandle_t xTaskToSuspend) {
   TaskImpl* impl = reinterpret_cast<TaskImpl*>(xTaskToSuspend);
   if (impl == nullptr) impl = tls_current_task;
-  if (!impl) return;
+  if (impl == nullptr) return;
   impl->suspended.store(true);
   if (impl == tls_current_task) {
     std::unique_lock<std::mutex> lk(impl->mtx);
@@ -182,7 +182,7 @@ void vTaskSuspend(TaskHandle_t xTaskToSuspend) {
 
 void vTaskResume(TaskHandle_t xTaskToResume) {
   TaskImpl* impl = reinterpret_cast<TaskImpl*>(xTaskToResume);
-  if (!impl) return;
+  if (impl == nullptr) return;
   impl->suspended.store(false);
   notify_task(impl);
 }

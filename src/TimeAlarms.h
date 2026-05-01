@@ -8,9 +8,9 @@
 
 #include "times.h"
 
-typedef std::function<void()> OnTick_t;
+using OnTick_t = std::function<void()>;
 
-typedef uint8_t AlarmID_t;
+using AlarmID_t = uint8_t;
 constexpr AlarmID_t dtINVALID_ALARM_ID = 255;
 
 static constexpr int MAX_ALARMS = 8;

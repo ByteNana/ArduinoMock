@@ -23,7 +23,7 @@ class Print {
   virtual void flush() {}
 
   // print overloads
-  size_t print(const char str[]);
+  size_t print(const char* str);
   size_t print(char c);
   size_t print(unsigned char val, int base = 10);
   size_t print(int val, int base = 10);
@@ -38,7 +38,7 @@ class Print {
 
   // println overloads
   size_t println();
-  size_t println(const char str[]);
+  size_t println(const char* str);
   size_t println(char c);
   size_t println(unsigned char val, int base = 10);
   size_t println(int val, int base = 10);

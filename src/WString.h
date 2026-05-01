@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cctype>
 #include <cstdint>
 #include <cstdio>
@@ -35,13 +36,13 @@ class String {
 
   String(unsigned long value, unsigned char base) {
     if (base == HEX) {
-      char buf[17];
-      snprintf(buf, sizeof(buf), "%lx", value);
-      _data = buf;
+      std::array<char, 17> buf{};
+      snprintf(buf.data(), buf.size(), "%lx", value);
+      _data = buf.data();
     } else if (base == OCT) {
-      char buf[23];
-      snprintf(buf, sizeof(buf), "%lo", value);
-      _data = buf;
+      std::array<char, 23> buf{};
+      snprintf(buf.data(), buf.size(), "%lo", value);
+      _data = buf.data();
     } else if (base == BIN) {
       if (value == 0) {
         _data = "0";
