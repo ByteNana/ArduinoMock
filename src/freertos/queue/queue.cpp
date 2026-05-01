@@ -76,4 +76,45 @@ UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue) {
   return static_cast<UBaseType_t>(q->q.size());
 }
 
+BaseType_t xQueueSendToBack(
+    QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) {
+  return xQueueSend(xQueue, pvItemToQueue, xTicksToWait);
+}
+
+BaseType_t xQueueSendToFront(
+    QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait) {
+  auto* q = xQueue;
+  if (!q || !pvItemToQueue) return pdFALSE;
+  std::unique_lock<std::mutex> lk(q->mtx);
+  auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(xTicksToWait);
+  while (q->q.size() >= q->capacity) {
+    if (xTicksToWait == 0) return pdFALSE;
+    if (q->cv_not_full.wait_until(lk, deadline) == std::cv_status::timeout) {
+      if (q->q.size() >= q->capacity) return pdFALSE;
+      break;
+    }
+  }
+  std::vector<uint8_t> item(q->item_size);
+  std::memcpy(item.data(), pvItemToQueue, q->item_size);
+  q->q.push_front(std::move(item));
+  q->cv_not_empty.notify_one();
+  return pdTRUE;
+}
+
+BaseType_t xQueuePeek(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicksToWait) {
+  auto* q = xQueue;
+  if (!q || !pvBuffer) return pdFALSE;
+  std::unique_lock<std::mutex> lk(q->mtx);
+  auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(xTicksToWait);
+  while (q->q.empty()) {
+    if (xTicksToWait == 0) return pdFALSE;
+    if (q->cv_not_empty.wait_until(lk, deadline) == std::cv_status::timeout) {
+      if (q->q.empty()) return pdFALSE;
+      break;
+    }
+  }
+  std::memcpy(pvBuffer, q->q.front().data(), q->item_size);
+  return pdTRUE;
+}
+
 }  // extern "C"

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(ArduinoNativeMocks VERSION 0.1.1 LANGUAGES C CXX)
+project(ArduinoNativeMocks VERSION 0.2.0 LANGUAGES C CXX)
 
 set(PROJECT_VERSION_SUFIX "-rc.1")
 set(CMAKE_PROJECT_VERSION "${PROJECT_VERSION}${PROJECT_VERSION_SUFIX}")

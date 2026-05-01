@@ -8,7 +8,6 @@
 | C++11 compiler | GCC / Clang / MSVC | — |
 | clang-format | any recent | `brew install clang-format` |
 | Lefthook | any recent | `brew install lefthook` |
-| bump-my-version | any recent | `pip install bump-my-version` |
 
 ## Setup
 
@@ -52,66 +51,30 @@ make setup          # installs Lefthook hooks + configures CMake
 
 ## Version Bumping
 
-Version is managed by [bump-my-version](https://github.com/callowayproject/bump-my-version) and stored in two places in `CMakeLists.txt`:
+Version is stored in two places in `CMakeLists.txt`:
 
 - `project(... VERSION X.Y.Z ...)` — the major.minor.patch
-- `set(PROJECT_VERSION_SUFIX "-rc.N")` — the pre-release suffix
+- `set(PROJECT_VERSION_SUFIX "-rc.N")` — the pre-release suffix (empty on stable releases)
 
-### Commands
-
-**Increment the release-candidate number** (e.g. `rc.1` → `rc.2`):
-
-```bash
-bump-my-version bump pre_n --dry-run --verbose   # preview
-bump-my-version bump pre_n                        # apply
-```
-
-**Promote to final release** (drops the `-rc.N` suffix):
-
-```bash
-bump-my-version bump patch    # 0.1.1-rc.N → 0.1.1
-bump-my-version bump minor    # 0.1.1-rc.N → 0.2.0
-bump-my-version bump major    # 0.1.1-rc.N → 1.0.0
-```
-
-> `commit = false` and `tag = false` are set in `.bumpversion.toml` — you review and commit the changes yourself. Tagging is handled automatically by CI on merge to `master`.
-
-### Check the current version
-
-```bash
-bump-my-version show current_version
-bump-my-version show-bump
-```
+Both fields are updated automatically by CI — no local tooling required.
 
 ## Release Process
 
-1. **Create an rc branch** from `master`:
-   ```bash
-   git checkout master && git pull
-   git checkout -b rc-0.2.0
-   ```
+1. **Create an rc branch** by triggering the **Create Release Candidate** workflow on GitHub Actions with the target stable version (e.g. `0.3.0`). This creates the `rc-0.3.0` branch, bumps `CMakeLists.txt` to `VERSION 0.3.0` / `PROJECT_VERSION_SUFIX "-rc.1"`, and opens a PR to `master`.
 
-2. **Bump the version** to match the branch:
+2. **Develop on feature branches**, merge PRs into the `rc-*` branch.
+
+3. **When ready to release**, clear the suffix on the rc branch:
    ```bash
-   bump-my-version bump minor          # updates CMakeLists.txt
+   sed -i 's/set(PROJECT_VERSION_SUFIX "[^"]*")/set(PROJECT_VERSION_SUFIX "")/' CMakeLists.txt
    git add CMakeLists.txt
-   git commit -m "chore: bump version to 0.2.0-rc.1"
-   git push -u origin rc-0.2.0
+   git commit -m "chore: release 0.3.0"
    ```
 
-3. **Develop on feature branches**, merge PRs into `rc-*`. Bump `pre_n` as needed for each RC iteration.
-
-4. **When ready to release**, promote to final:
-   ```bash
-   bump-my-version bump patch          # drops -rc.N suffix
-   git add CMakeLists.txt
-   git commit -m "chore: release 0.2.0"
-   ```
-
-5. **Open a PR** from `rc-0.2.0` → `master`. Squash-merge it.
+4. **Merge the PR** from `rc-0.3.0` → `master`. Squash-merge it.
    > The **Version Check** CI job will fail if the `vX.Y.Z` tag already exists — bump the version in `CMakeLists.txt` before merging.
 
-6. The **auto-tag** GitHub Action creates a `vX.Y.Z` tag and GitHub Release automatically.
+5. The **auto-tag** GitHub Action creates a `vX.Y.Z` tag and GitHub Release automatically.
 
 ## Git Hooks
 

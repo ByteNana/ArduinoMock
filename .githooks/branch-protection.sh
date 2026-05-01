@@ -24,27 +24,25 @@ fi
 
 # --- rc-*: block force pushes ---
 if [[ "$BRANCH" == rc-* ]]; then
-  while read -r local_ref local_oid remote_ref remote_oid; do
-    # Skip deletes
-    if [ "$local_oid" = "$ZERO" ]; then
-      continue
-    fi
+  REMOTE_REF="refs/remotes/${REMOTE}/${BRANCH}"
 
-    # New branch push (remote_oid is zero) — always allow
-    if [ "$remote_oid" = "$ZERO" ]; then
-      continue
-    fi
+  # New branch push (no remote tracking ref yet) — always allow
+  if ! git rev-parse --verify "$REMOTE_REF" &>/dev/null; then
+    exit 0
+  fi
 
-    # Check if remote_oid is an ancestor of local_oid (fast-forward check)
-    if ! git merge-base --is-ancestor "$remote_oid" "$local_oid" 2>/dev/null; then
-      echo ""
-      echo "  ERROR: Force push to '${BRANCH}' is not allowed."
-      echo "  The branch '${BRANCH}' is a release candidate — rebasing the remote is forbidden."
-      echo "  Use a normal (fast-forward) push instead."
-      echo ""
-      exit 1
-    fi
-  done
+  REMOTE_OID=$(git rev-parse "$REMOTE_REF")
+  LOCAL_OID=$(git rev-parse HEAD)
+
+  # Check if remote_oid is an ancestor of local_oid (fast-forward check)
+  if ! git merge-base --is-ancestor "$REMOTE_OID" "$LOCAL_OID" 2>/dev/null; then
+    echo ""
+    echo "  ERROR: Force push to '${BRANCH}' is not allowed."
+    echo "  The branch '${BRANCH}' is a release candidate — rebasing the remote is forbidden."
+    echo "  Use a normal (fast-forward) push instead."
+    echo ""
+    exit 1
+  fi
 
   exit 0
 fi

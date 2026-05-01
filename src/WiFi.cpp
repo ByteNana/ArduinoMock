@@ -7,26 +7,13 @@
 
 #include <cstring>
 
-int32_t WiFiClass::RSSI() {
-  const char* iface = "wlan0";
-  char cmd[128];
-  std::snprintf(cmd, sizeof(cmd), "iw dev %s link | grep signal:", iface);
+int32_t WiFiClass::RSSI() { return _rssi; }
 
-  FILE* pipe = popen(cmd, "r");
-  if (!pipe) return -100;
-
-  char buffer[128];
-  int rssi = -100;
-
-  if (fgets(buffer, sizeof(buffer), pipe)) {
-    char* p = std::strstr(buffer, "signal:");
-    if (p) {
-      rssi = std::atoi(p + strlen("signal:"));  // skips string "signal:"
-    }
+int32_t WiFiClass::RSSI(int index) {
+  if (index >= 0 && static_cast<size_t>(index) < _scanResults.size()) {
+    return _scanResults[index].rssi;
   }
-
-  pclose(pipe);
-  return rssi;
+  return 0;
 }
 
 wl_status_t WiFiClass::status() { return _status; }
@@ -81,11 +68,61 @@ String WiFiClass::macAddress() {
   return String(buf);
 }
 
+void WiFiClass::macAddress(uint8_t* mac) {
+  if (mac) std::memset(mac, 0, 6);
+}
+
 bool WiFiClass::begin(const char* ssid, const char* password) {
-  _status = WL_CONNECTED;
-  return true;
+  _ssid = ssid ? ssid : "";
+  if (_beginConnects) {
+    _status = WL_CONNECTED;
+    return true;
+  }
+  _status = WL_CONNECT_FAILED;
+  return false;
 }
 
 void WiFiClass::disconnect() { _status = WL_DISCONNECTED; }
+
+void WiFiClass::disconnect(bool, bool) { disconnect(); }
+
+wl_status_t WiFiClass::waitForConnectResult(unsigned long) { return _status; }
+
+int WiFiClass::scanNetworks(bool, bool) { return static_cast<int>(_scanResults.size()); }
+
+String WiFiClass::SSID(int index) {
+  if (index >= 0 && static_cast<size_t>(index) < _scanResults.size()) {
+    return String(_scanResults[index].ssid.c_str());
+  }
+  return String("");
+}
+
+String WiFiClass::SSID() { return String(_ssid.c_str()); }
+
+int WiFiClass::hostByName(const char*, IPAddress& result) {
+  if (_dnsSuccess) {
+    result = IPAddress(8, 8, 8, 8);
+    return 1;
+  }
+  return 0;
+}
+
+IPAddress WiFiClass::gatewayIP() { return IPAddress(192, 168, 1, 1); }
+IPAddress WiFiClass::subnetMask() { return IPAddress(255, 255, 255, 0); }
+IPAddress WiFiClass::dnsIP() { return IPAddress(8, 8, 8, 8); }
+
+void WiFiClass::setAutoReconnect(bool) {}
+void WiFiClass::setAutoConnect(bool) {}
+void WiFiClass::onEvent(std::function<void(int)>) {}
+
+void WiFiClass::reset() {
+  _rssi = -50;
+  _status = WL_CONNECTED;
+  _mode = WIFI_STA;
+  _scanResults.clear();
+  _dnsSuccess = true;
+  _beginConnects = true;
+  _ssid.clear();
+}
 
 WiFiClass WiFi;

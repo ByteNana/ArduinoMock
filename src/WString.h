@@ -1,11 +1,28 @@
 #pragma once
 
+#include <cctype>
+#include <cstdint>
+#include <cstdio>
 #include <string>
 #include <type_traits>
+
+#ifndef DEC
+#define DEC 10
+#endif
+#ifndef HEX
+#define HEX 16
+#endif
+#ifndef OCT
+#define OCT 8
+#endif
+#ifndef BIN
+#define BIN 2
+#endif
 
 class String {
  private:
   std::string _data;
+  mutable size_t _readPos = 0;
 
  public:
   String() {}
@@ -15,6 +32,32 @@ class String {
 
   template <typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
   explicit String(T value) : _data(std::to_string(value)) {}
+
+  String(unsigned long value, unsigned char base) {
+    if (base == HEX) {
+      char buf[17];
+      snprintf(buf, sizeof(buf), "%lx", value);
+      _data = buf;
+    } else if (base == OCT) {
+      char buf[23];
+      snprintf(buf, sizeof(buf), "%lo", value);
+      _data = buf;
+    } else if (base == BIN) {
+      if (value == 0) {
+        _data = "0";
+        return;
+      }
+      std::string bits;
+      unsigned long v = value;
+      while (v > 0) {
+        bits = static_cast<char>('0' + (v & 1)) + bits;
+        v >>= 1;
+      }
+      _data = bits;
+    } else {
+      _data = std::to_string(value);
+    }
+  }
 
   String& operator=(const char* str) {
     _data = str;
@@ -49,8 +92,25 @@ class String {
   bool operator==(const char* rhs) const { return _data == rhs; }
   bool operator!=(const char* rhs) const { return _data != rhs; }
 
+  bool equals(const String& rhs) const { return _data == rhs._data; }
+  bool equals(const char* rhs) const { return _data == rhs; }
+
+  bool equalsIgnoreCase(const String& rhs) const {
+    if (_data.size() != rhs._data.size()) return false;
+    for (size_t i = 0; i < _data.size(); i++) {
+      if (tolower(static_cast<unsigned char>(_data[i])) !=
+          tolower(static_cast<unsigned char>(rhs._data[i])))
+        return false;
+    }
+    return true;
+  }
+
   const char* c_str() const { return _data.c_str(); }
   size_t length() const { return _data.length(); }
+  void clear() {
+    _data.clear();
+    _readPos = 0;
+  }
 
   char charAt(int index) const {
     if (index >= 0 && static_cast<size_t>(index) < _data.size()) { return _data[index]; }
@@ -187,6 +247,31 @@ class String {
   }
 
   bool isEmpty() const { return _data.empty(); }
+
+  size_t write(uint8_t c) {
+    _data += static_cast<char>(c);
+    return 1;
+  }
+
+  size_t write(const uint8_t* buf, size_t size) {
+    _data.append(reinterpret_cast<const char*>(buf), size);
+    return size;
+  }
+
+  // Stream-like read interface (used by ArduinoJson Reader<String>)
+  int read() const {
+    if (_readPos >= _data.size()) return -1;
+    return static_cast<unsigned char>(_data[_readPos++]);
+  }
+
+  int peek() const {
+    if (_readPos >= _data.size()) return -1;
+    return static_cast<unsigned char>(_data[_readPos]);
+  }
+
+  int available() const {
+    return (_readPos < _data.size()) ? static_cast<int>(_data.size() - _readPos) : 0;
+  }
 };
 
 inline bool operator==(const char* lhs, const String& rhs) { return rhs == lhs; }

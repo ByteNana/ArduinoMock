@@ -18,6 +18,19 @@ typedef struct TaskControlBlock* TaskHandle_t;
 #define tskIDLE_PRIORITY 0
 #endif
 
+#ifndef taskYIELD
+#define taskYIELD() ((void)0)
+#endif
+
+// Task notification actions
+typedef enum {
+  eNoAction,
+  eSetBits,
+  eIncrement,
+  eSetValueWithOverwrite,
+  eSetValueWithoutOverwrite
+} eNotifyAction;
+
 // API
 BaseType_t xTaskCreate(
     TaskFunction_t pxTaskCode, const char* const pcName, const uint32_t usStackDepth,
@@ -27,10 +40,19 @@ void vTaskDelete(TaskHandle_t xTask);
 
 void vTaskDelay(const TickType_t xTicksToDelay);
 
+inline void vTaskDelayUntil(TickType_t* pxPreviousWakeTime, const TickType_t xTimeIncrement) {
+  vTaskDelay(xTimeIncrement);
+  if (pxPreviousWakeTime) *pxPreviousWakeTime += xTimeIncrement;
+}
+
 void vTaskStartScheduler(void);
 void vTaskEndScheduler(void);
 
 TickType_t xTaskGetTickCount(void);
+
+// Task notifications
+BaseType_t xTaskNotify(TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyAction eAction);
+uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit, TickType_t xTicksToWait);
 
 // Optional helpers used by hooks/tests
 size_t xPortGetFreeHeapSize(void);

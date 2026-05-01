@@ -17,20 +17,27 @@ class IPAddress {
 
   uint8_t operator[](int index) const { return _address[index]; }
 
+  bool operator==(const IPAddress& other) const {
+    return _address[0] == other._address[0] && _address[1] == other._address[1] &&
+           _address[2] == other._address[2] && _address[3] == other._address[3];
+  }
+  bool operator!=(const IPAddress& other) const { return !(*this == other); }
+  operator String() const { return toString(); }
+
   String toString() const {
     String s;
     s.reserve(16);
-    s += _address[0];
+    s += String(_address[0]);
     s += ".";
-    s += _address[1];
+    s += String(_address[1]);
     s += ".";
-    s += _address[2];
+    s += String(_address[2]);
     s += ".";
-    s += _address[3];
+    s += String(_address[3]);
     return s;
   }
 
  private:
-  uint8_t *raw_address() { return _address; }
+  uint8_t* raw_address() { return _address; }
   uint8_t _address[4];
 };

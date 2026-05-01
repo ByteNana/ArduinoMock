@@ -18,6 +18,12 @@ BaseType_t xQueueReceive(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicks
 
 UBaseType_t uxQueueMessagesWaiting(QueueHandle_t xQueue);
 
+BaseType_t xQueueSendToFront(
+    QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait);
+BaseType_t xQueueSendToBack(
+    QueueHandle_t xQueue, const void* pvItemToQueue, TickType_t xTicksToWait);
+BaseType_t xQueuePeek(QueueHandle_t xQueue, void* pvBuffer, TickType_t xTicksToWait);
+
 #ifdef __cplusplus
 }
 #endif

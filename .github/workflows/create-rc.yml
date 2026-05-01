@@ -1,0 +1,38 @@
+name: Create Release Candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Target stable version (e.g. 0.3.0)"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  create-rc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate version format
+        run: |
+          if ! echo "${{ inputs.version }}" | grep -qP '^\d+\.\d+\.\d+$'; then
+            echo "::error::version must be x.y.z (got: ${{ inputs.version }})"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - uses: Bytenana-Actions/create-rc@v0
+        with:
+          version: ${{ inputs.version }}
+          base-branch: master
+          bump-command: |
+            sed -i "s/project(ArduinoNativeMocks VERSION [0-9][0-9.]*/project(ArduinoNativeMocks VERSION $VERSION/" CMakeLists.txt
+            sed -i "s/set(PROJECT_VERSION_SUFIX \"[^\"]*\")/set(PROJECT_VERSION_SUFIX \"-rc.1\")/" CMakeLists.txt
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,12 +1,11 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
+#include <cctype>
 
-#include "WString.h"
+#include "Print.h"
 #include "times.h"
 
-class Stream {
+class Stream : public Print {
  protected:
   unsigned long _startMillis;
   unsigned long _timeout;
@@ -14,17 +13,10 @@ class Stream {
  public:
   Stream(unsigned long timeout = 1000) : _startMillis(0), _timeout(timeout) {}
   virtual ~Stream() = default;
+
   virtual int available() = 0;
   virtual int read() = 0;
-  virtual size_t write(uint8_t) = 0;
-  virtual size_t write(const uint8_t* buffer, size_t size) = 0;
-  virtual void flush() = 0;
   virtual int peek() = 0;
-  virtual size_t print(int value) { return print(String(value)); }
-  virtual size_t print(uint16_t value) { return print(String(value)); }
-
-  virtual size_t println() { return println(""); }  // Empty line
-  virtual size_t println(int value) { return println(String(value)); }
 
   int timedRead() {
     int c;
@@ -36,32 +28,84 @@ class Stream {
     return -1;
   }
 
-  size_t print(const String& str) {
-    return write(reinterpret_cast<const uint8_t*>(str.c_str()), str.length());
+  String readString() {
+    String result;
+    int c;
+    while ((c = timedRead()) >= 0) result += static_cast<char>(c);
+    return result;
   }
 
-  size_t println(const String& str) {
-    size_t n = print(str);
-    n += write('\r');
-    n += write('\n');
-    return n;
+  String readStringUntil(char terminator) {
+    String result;
+    int c;
+    while ((c = timedRead()) >= 0) {
+      if (static_cast<char>(c) == terminator) break;
+      result += static_cast<char>(c);
+    }
+    return result;
+  }
+
+  void setTimeout(unsigned long timeout) { _timeout = timeout; }
+  unsigned long getTimeout() const { return _timeout; }
+
+  size_t readBytes(char* buffer, size_t length) {
+    size_t count = 0;
+    while (count < length) {
+      int c = timedRead();
+      if (c < 0) break;
+      buffer[count++] = static_cast<char>(c);
+    }
+    return count;
+  }
+
+  size_t readBytesUntil(char terminator, char* buffer, size_t length) {
+    size_t count = 0;
+    while (count < length) {
+      int c = timedRead();
+      if (c < 0 || static_cast<char>(c) == terminator) break;
+      buffer[count++] = static_cast<char>(c);
+    }
+    return count;
+  }
+
+  long parseInt() {
+    bool negative = false;
+    long value = 0;
+    int c;
+    while ((c = timedRead()) >= 0 && !isdigit(c) && c != '-') {}
+    if (c == '-') {
+      negative = true;
+      c = timedRead();
+    }
+    while (c >= 0 && isdigit(c)) {
+      value = value * 10 + (c - '0');
+      c = timedRead();
+    }
+    return negative ? -value : value;
+  }
+
+  float parseFloat() {
+    bool negative = false;
+    float value = 0.0f;
+    float fraction = 1.0f;
+    bool inFraction = false;
+    int c;
+    while ((c = timedRead()) >= 0 && !isdigit(c) && c != '-' && c != '.') {}
+    if (c == '-') {
+      negative = true;
+      c = timedRead();
+    }
+    while (c >= 0 && (isdigit(c) || c == '.')) {
+      if (c == '.') {
+        inFraction = true;
+      } else if (!inFraction) {
+        value = value * 10.0f + static_cast<float>(c - '0');
+      } else {
+        fraction *= 0.1f;
+        value += static_cast<float>(c - '0') * fraction;
+      }
+      c = timedRead();
+    }
+    return negative ? -value : value;
   }
 };
-
-class HardwareSerial : public Stream {
- public:
-  HardwareSerial(int indexA) {}
-  void begin(unsigned long baud) {}
-  void println(const String& str) {}
-  void print(const String& str) {}
-  size_t write(uint8_t c) { return 1; }
-  size_t write(const uint8_t* buffer, size_t size) { return size; }
-  void flush() {}
-  int available() { return 0; }
-  int read() { return -1; }
-  int peek() { return -1; }
-};
-
-extern HardwareSerial Serial;
-extern HardwareSerial Serial2;
-extern HardwareSerial Serial3;

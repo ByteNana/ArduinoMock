@@ -23,6 +23,7 @@ typedef uint32_t portSTACK_TYPE;
 #endif
 
 #define pdMS_TO_TICKS(x) ((TickType_t)((x) / portTICK_PERIOD_MS))
+#define pdTICKS_TO_MS(x) ((uint32_t)((x) * portTICK_PERIOD_MS))
 
 #ifndef portMAX_DELAY
 #define portMAX_DELAY ((TickType_t)0xffffffffUL)

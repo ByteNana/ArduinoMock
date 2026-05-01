@@ -1,0 +1,97 @@
+#include <gtest/gtest.h>
+
+#include "Arduino.h"
+#include "Esp.h"
+#include "WiFi.h"
+#include "WiFiClient.h"
+#include "freertos/FreeRTOS.h"
+
+// --- wl_status_t enum values match ESP32 SDK ---
+
+TEST(WiFiEnumTest, StatusValuesMatchESP32) {
+  EXPECT_EQ(WL_IDLE_STATUS, 0);
+  EXPECT_EQ(WL_NO_SSID_AVAIL, 1);
+  EXPECT_EQ(WL_SCAN_COMPLETED, 2);
+  EXPECT_EQ(WL_CONNECTED, 3);
+  EXPECT_EQ(WL_CONNECT_FAILED, 4);
+  EXPECT_EQ(WL_CONNECTION_LOST, 5);
+  EXPECT_EQ(WL_DISCONNECTED, 6);
+}
+
+// --- WiFiEventSysCb typedef exists ---
+
+TEST(WiFiEnumTest, WiFiEventSysCbTypeExists) {
+  WiFiEventSysCb cb = [](int) {};
+  cb(0);  // should compile and run
+}
+
+// --- WiFiClient::setCanConnect is static ---
+
+TEST(WiFiClientStaticTest, SetCanConnectIsStatic) {
+  WiFiClient::setCanConnect(false);
+  WiFiClient client;
+  EXPECT_FALSE(client.connect(IPAddress(1, 2, 3, 4), 80));
+  WiFiClient::setCanConnect(true);
+  EXPECT_TRUE(client.connect(IPAddress(1, 2, 3, 4), 80));
+}
+
+// --- FreeRTOS Task Notifications ---
+
+TEST(TaskNotificationTest, XTaskNotifyNullHandleReturnsFalse) {
+  // Real implementation rejects nullptr handle
+  EXPECT_EQ(xTaskNotify(nullptr, 1, eSetValueWithOverwrite), pdFALSE);
+}
+
+TEST(TaskNotificationTest, UlTaskNotifyTakeReturnsZero) {
+  EXPECT_EQ(ulTaskNotifyTake(pdTRUE, 0), 0u);
+}
+
+TEST(TaskNotificationTest, ENotifyActionEnumValues) {
+  // Verify all enum values exist
+  EXPECT_EQ(eNoAction, 0);
+  EXPECT_EQ(eSetBits, 1);
+  EXPECT_EQ(eIncrement, 2);
+  EXPECT_EQ(eSetValueWithOverwrite, 3);
+  EXPECT_EQ(eSetValueWithoutOverwrite, 4);
+}
+
+// --- ESP System ---
+
+TEST(EspClassTest, GetFlashChipSpeed) {
+  EXPECT_EQ(ESP.getFlashChipSpeed(), static_cast<uint32_t>(FLASH_CHIP_SPEED));
+}
+
+TEST(EspClassTest, RtcDataAttrDefined) {
+  RTC_DATA_ATTR int x = 42;
+  EXPECT_EQ(x, 42);
+}
+
+TEST(EspClassTest, GetEfuseMacReturnsMockValue) {
+  EXPECT_EQ(ESP.getEfuseMac(), static_cast<uint64_t>(MOCK_EFUSE_MAC));
+}
+
+// --- String base constructors ---
+
+TEST(StringBaseTest, HexFormatting) { EXPECT_EQ(String(0xABCDUL, HEX), "abcd"); }
+
+TEST(StringBaseTest, BinaryFormatting) { EXPECT_EQ(String(255UL, BIN), "11111111"); }
+
+TEST(StringBaseTest, OctalFormatting) { EXPECT_EQ(String(8UL, OCT), "10"); }
+
+TEST(StringBaseTest, DecimalFormatting) { EXPECT_EQ(String(42UL, DEC), "42"); }
+
+TEST(ProgmemTest, PGMREADByteIsIdentity) {
+  const uint8_t arr[] PROGMEM = {0x42};
+  EXPECT_EQ(pgm_read_byte(&arr[0]), 0x42);
+}
+TEST(ProgmemTest, PGMREADWordIsIdentity) {
+  const uint16_t arr[] PROGMEM = {0xBEEF};
+  EXPECT_EQ(pgm_read_word(&arr[0]), 0xBEEFu);
+}
+TEST(ProgmemTest, PGMREADWordFromUint8Unaligned) {
+  const uint8_t arr[] PROGMEM = {0xEF, 0xBE, 0xFE, 0xCA};
+  EXPECT_EQ(pgm_read_word(reinterpret_cast<const void*>(&arr[0])), 0xBEEFu);
+  EXPECT_EQ(pgm_read_word(reinterpret_cast<const void*>(&arr[1])), 0xFEBEu);
+}
+TEST(AnalogTest, AnalogReadReturnsZero) { EXPECT_EQ(analogRead(0), 0); }
+TEST(AnalogTest, AnalogWriteCompiles) { EXPECT_NO_THROW(analogWrite(0, 128)); }
