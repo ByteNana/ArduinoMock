@@ -1,0 +1,33 @@
+name: Create Release Candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Target stable version (e.g. 0.3.0)"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  create-rc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Install bump-my-version
+        run: pip install bump-my-version
+
+      - uses: Bytenana-Actions/create-rc@v0
+        with:
+          version: ${{ inputs.version }}
+          base-branch: master
+          bump-command: |
+            bump-my-version bump --new-version $VERSION --no-commit && bump-my-version bump pre_n --no-commit
+          token: ${{ secrets.GITHUB_TOKEN }}
