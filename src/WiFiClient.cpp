@@ -1,6 +1,7 @@
 #include "WiFiClient.h"
 
 bool WiFiClient::_canConnect = true;
+int WiFiClient::_available = 0;
 
 int WiFiClient::connect(IPAddress ip, uint16_t port) { return connect(ip, port, 0) ? 1 : 0; }
 
@@ -18,7 +19,7 @@ size_t WiFiClient::write(uint8_t) { return 0; }
 
 size_t WiFiClient::write(const uint8_t *, size_t) { return 0; }
 
-int WiFiClient::available() { return 0; }
+int WiFiClient::available() { return _available; }
 
 int WiFiClient::read() { return -1; }
 

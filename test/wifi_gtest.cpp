@@ -159,7 +159,7 @@ TEST_F(WiFiTest, MacAddressBufferOverload) {
 
 class WiFiClientTest : public ::testing::Test {
  protected:
-  void SetUp() override { WiFiClient::setCanConnect(true); }
+  void SetUp() override { WiFiClient::reset(); }
 };
 
 TEST_F(WiFiClientTest, ConnectsByDefault) {
@@ -201,6 +201,31 @@ TEST(IPAddressTest, StringConversion) {
   IPAddress ip(192, 168, 1, 100);
   String s = ip;  // implicit conversion
   EXPECT_STREQ(s.c_str(), "192.168.1.100");
+}
+
+TEST_F(WiFiClientTest, AvailableReturnsZeroByDefault) {
+  WiFiClient client;
+  EXPECT_EQ(client.available(), 0);
+}
+
+TEST_F(WiFiClientTest, SetAvailableConfiguresReturnValue) {
+  WiFiClient::setAvailable(128);
+  WiFiClient client;
+  EXPECT_EQ(client.available(), 128);
+}
+
+TEST_F(WiFiClientTest, ResetClearsAvailable) {
+  WiFiClient::setAvailable(64);
+  WiFiClient::reset();
+  WiFiClient client;
+  EXPECT_EQ(client.available(), 0);
+}
+
+TEST_F(WiFiClientTest, ResetRestoresCanConnect) {
+  WiFiClient::setCanConnect(false);
+  WiFiClient::reset();
+  WiFiClient client;
+  EXPECT_TRUE(client.connect(IPAddress(1, 2, 3, 4), 80));
 }
 
 TEST_F(WiFiClientTest, InheritsFromClient) {
