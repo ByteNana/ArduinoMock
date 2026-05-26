@@ -9,8 +9,7 @@ bool UpdateClass::_lastEndArg = false;
 bool UpdateClass::begin(size_t size, int command) {
   (void)size;
   (void)command;
-  if (!_beginResult)
-    _error = 1;
+  if (!_beginResult) _error = 1;
   return _beginResult;
 }
 

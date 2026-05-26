@@ -141,9 +141,7 @@ TEST_F(UpdaterTest, PartialWriteAborts) {
 TEST_F(UpdaterTest, BeginFailureNeverCallsEnd) {
   UpdateClass::setBeginResult(false);
 
-  if (Update.begin(1024)) {
-    Update.end(true);
-  }
+  if (Update.begin(1024)) { Update.end(true); }
 
   EXPECT_EQ(UpdateClass::endCallCount(), 0);
 }
