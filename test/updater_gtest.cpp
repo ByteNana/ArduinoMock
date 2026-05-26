@@ -18,7 +18,19 @@ TEST_F(UpdaterTest, BeginWithCommandReturnsFalse) {
   EXPECT_FALSE(Update.begin(1024, U_SPIFFS));
 }
 
-TEST_F(UpdaterTest, EndReturnsTrueByDefault) { EXPECT_TRUE(Update.end()); }
+TEST_F(UpdaterTest, EndWithCommitReturnsTrue) { EXPECT_TRUE(Update.end(true)); }
+
+TEST_F(UpdaterTest, EndWithAbortReturnsFalse) { EXPECT_FALSE(Update.end(false)); }
+
+TEST_F(UpdaterTest, EndAbortSetsError) {
+  Update.end(false);
+  EXPECT_NE(Update.getError(), static_cast<uint8_t>(0));
+}
+
+TEST_F(UpdaterTest, EndCommitDoesNotSetError) {
+  Update.end(true);
+  EXPECT_EQ(Update.getError(), static_cast<uint8_t>(0));
+}
 
 TEST_F(UpdaterTest, HasErrorReturnsFalse) { EXPECT_FALSE(Update.hasError()); }
 

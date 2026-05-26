@@ -16,7 +16,8 @@ bool UpdateClass::begin(size_t size, int command) {
 bool UpdateClass::end(bool evenIfRemaining) {
   _endCallCount++;
   _lastEndArg = evenIfRemaining;
-  return true;
+  if (!evenIfRemaining) _error = 1;
+  return evenIfRemaining;
 }
 
 size_t UpdateClass::writeStream(Stream& stream) {
