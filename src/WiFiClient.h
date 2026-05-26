@@ -20,10 +20,16 @@ class WiFiClient : public Client {
   uint8_t connected() override;
   operator bool() override;
 
-  // Test helper — static so tests can configure before instantiation
+  // Test helpers — static so tests can configure before instantiation
   static void setCanConnect(bool v) { _canConnect = v; }
+  static void setAvailable(int bytes) { _available = bytes; }
+  static void reset() {
+    _canConnect = true;
+    _available = 0;
+  }
 
  private:
   static bool _canConnect;
+  static int _available;
   bool _connected = false;
 };
