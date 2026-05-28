@@ -56,6 +56,16 @@ TickType_t xTaskGetTickCount(void);
 BaseType_t xTaskNotify(TaskHandle_t xTaskToNotify, uint32_t ulValue, eNotifyAction eAction);
 uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit, TickType_t xTicksToWait);
 
+static inline BaseType_t xTaskNotifyWait(
+    uint32_t ulBitsToClearOnEntry, uint32_t ulBitsToClearOnExit, uint32_t* pulNotificationValue,
+    TickType_t xTicksToWait) {
+  (void)ulBitsToClearOnEntry;
+  (void)ulBitsToClearOnExit;
+  uint32_t v = ulTaskNotifyTake(pdTRUE, xTicksToWait);
+  if (pulNotificationValue != NULL) *pulNotificationValue = v;
+  return v > 0 ? pdTRUE : pdFALSE;
+}
+
 // Optional helpers used by hooks/tests
 size_t xPortGetFreeHeapSize(void);
 
