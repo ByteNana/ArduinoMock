@@ -5,6 +5,8 @@
 #include <thread>
 
 #include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "freertos/task.h"
 
 static void simple_task(void*) {
   vTaskDelay(pdMS_TO_TICKS(30));
@@ -188,6 +190,64 @@ TEST(TaskNotifyTest, SetValueWithoutOverwriteDoesNotReplaceIfPending) {
 
 TEST(TaskNotifyTest, NullHandleReturnsFail) {
   EXPECT_EQ(xTaskNotify(nullptr, 0u, eSetValueWithOverwrite), pdFALSE);
+}
+
+TEST(TaskNotifyTest, ZeroValueNotificationWakesTask) {
+  struct ZeroArgs {
+    std::atomic<bool> woke{false};
+    std::atomic<bool> done{false};
+  };
+  ZeroArgs s;
+  TaskHandle_t th = nullptr;
+  ASSERT_EQ(
+      xTaskCreate(
+          [](void* arg) {
+            auto* s = static_cast<ZeroArgs*>(arg);
+            ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(500));
+            s->woke.store(true);
+            s->done.store(true);
+            vTaskDelete(nullptr);
+          },
+          "zero", 2048, &s, tskIDLE_PRIORITY + 1, &th),
+      pdPASS);
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  EXPECT_EQ(xTaskNotify(th, 0u, eSetValueWithOverwrite), pdPASS);
+
+  for (int i = 0; i < 100 && !s.done.load(); ++i)
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+  EXPECT_TRUE(s.woke.load());
+}
+
+TEST(TaskNotifyTest, xTaskNotifyWaitReceivesValue) {
+  struct WaitArgs {
+    std::atomic<uint32_t> received{0};
+    std::atomic<bool> done{false};
+  };
+  WaitArgs s;
+  TaskHandle_t th = nullptr;
+  ASSERT_EQ(
+      xTaskCreate(
+          [](void* arg) {
+            auto* s = static_cast<WaitArgs*>(arg);
+            uint32_t val = 0;
+            xTaskNotifyWait(0, 0, &val, pdMS_TO_TICKS(500));
+            s->received.store(val);
+            s->done.store(true);
+            vTaskDelete(nullptr);
+          },
+          "nwait", 2048, &s, tskIDLE_PRIORITY + 1, &th),
+      pdPASS);
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  EXPECT_EQ(xTaskNotify(th, 77u, eSetValueWithOverwrite), pdPASS);
+
+  for (int i = 0; i < 100 && !s.done.load(); ++i)
+    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+  EXPECT_TRUE(s.done.load());
+  EXPECT_EQ(s.received.load(), 77u);
 }
 
 // --- vTaskSuspend / vTaskResume tests ---

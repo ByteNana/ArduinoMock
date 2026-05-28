@@ -147,20 +147,21 @@ uint32_t ulTaskNotifyTake(BaseType_t xClearCountOnExit, TickType_t xTicksToWait)
   TaskImpl* impl = tls_current_task;
   if (impl == nullptr) return 0;
   std::unique_lock<std::mutex> lk(impl->mtx);
-  auto pred = [impl]() { return impl->notificationValue > 0 || impl->cancel.load(); };
+  auto pred = [impl]() { return impl->notificationPending || impl->cancel.load(); };
   if (xTicksToWait == portMAX_DELAY) {
     impl->cv.wait(lk, pred);
   } else {
     impl->cv.wait_for(lk, std::chrono::milliseconds(xTicksToWait), pred);
   }
-  if (impl->notificationValue == 0) return 0;
+  if (!impl->notificationPending) return 0;
+  impl->notificationPending = false;
   uint32_t value = impl->notificationValue;
   if (xClearCountOnExit == pdTRUE) {
     impl->notificationValue = 0;
   } else {
     impl->notificationValue--;
   }
-  impl->notificationPending = (impl->notificationValue > 0);
+  impl->notificationPending = (impl->notificationValue > 0);  // still pending if count remains
   return value;
 }
 
