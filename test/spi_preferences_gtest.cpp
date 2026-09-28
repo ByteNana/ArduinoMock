@@ -41,7 +41,12 @@ class PreferencesTest : public ::testing::Test {
  protected:
   Preferences prefs;
 
-  void SetUp() override { prefs.begin("test"); }
+  // Every namespace is forgotten first: the store is static now, so without
+  // this a key written by one case would still be there for the next.
+  void SetUp() override {
+    Preferences::mockResetAll();
+    prefs.begin("test");
+  }
   void TearDown() override { prefs.end(); }
 };
 
@@ -113,3 +118,95 @@ TEST_F(PreferencesTest, PutGetUIntRoundTrip) {
 }
 
 TEST_F(PreferencesTest, FreeEntriesReturns100) { EXPECT_EQ(prefs.freeEntries(), 100u); }
+
+// Two instances that begin() the same namespace share one store, like NVS.
+TEST_F(PreferencesTest, InstancesShareANamespace) {
+  Preferences a, b;
+  a.begin("shared", false);
+  b.begin("shared", false);
+  a.putUInt("v", 7u);
+  EXPECT_EQ(b.getUInt("v", 0u), 7u);
+  EXPECT_TRUE(b.remove("v"));
+  EXPECT_EQ(a.getUInt("v", 0u), 0u);
+  Preferences c;
+  c.begin("other", false);
+  EXPECT_FALSE(c.isKey("v"));
+}
+
+// The motivating case: a test presets and removes keys through its own object,
+// and the (file-static) object the code under test owns sees the result when it
+// begin()s the namespace afterwards.
+TEST_F(PreferencesTest, PresetIsVisibleToAnInstanceThatBeginsLater) {
+  Preferences fixture;
+  fixture.begin("stats", false);
+  fixture.putUInt("stats_v", 3u);
+  EXPECT_TRUE(fixture.remove("stats_v"));
+
+  Preferences firmware;
+  firmware.begin("stats", false);
+  EXPECT_FALSE(firmware.isKey("stats_v"));
+  firmware.putUInt("stats_v", 1u);
+  EXPECT_EQ(fixture.getUInt("stats_v", 0u), 1u);
+}
+
+TEST_F(PreferencesTest, NamespacesIsolateTheSameKey) {
+  Preferences a, b;
+  a.begin("ns_a", false);
+  b.begin("ns_b", false);
+  a.putInt("k", 1);
+  b.putInt("k", 2);
+  EXPECT_EQ(a.getInt("k", 0), 1);
+  EXPECT_EQ(b.getInt("k", 0), 2);
+}
+
+TEST_F(PreferencesTest, ClearOnlyAffectsTheCurrentNamespace) {
+  Preferences a, b;
+  a.begin("ns_a", false);
+  b.begin("ns_b", false);
+  a.putInt("k", 1);
+  b.putInt("k", 2);
+  a.clear();
+  EXPECT_FALSE(a.isKey("k"));
+  EXPECT_EQ(b.getInt("k", 0), 2);
+}
+
+TEST_F(PreferencesTest, ReBeginSwitchesNamespace) {
+  Preferences a;
+  a.begin("ns_a", false);
+  a.putInt("k", 1);
+  a.begin("ns_b", false);
+  EXPECT_FALSE(a.isKey("k"));
+  a.begin("ns_a", false);
+  EXPECT_EQ(a.getInt("k", 0), 1);
+}
+
+TEST_F(PreferencesTest, StringAndBytesCrossInstances) {
+  Preferences a, b;
+  a.begin("shared", false);
+  b.begin("shared", false);
+
+  a.putString("name", "kiln");
+  char buf[16] = {};
+  EXPECT_EQ(b.getString("name", buf, sizeof(buf)), 4u);
+  EXPECT_STREQ(buf, "kiln");
+
+  const uint8_t blob[3] = {0xDE, 0xAD, 0xBE};
+  a.putBytes("blob", blob, sizeof(blob));
+  uint8_t out[3] = {};
+  EXPECT_EQ(b.getBytes("blob", out, sizeof(out)), 3u);
+  EXPECT_EQ(out[0], 0xDE);
+  EXPECT_EQ(out[2], 0xBE);
+}
+
+TEST_F(PreferencesTest, MockResetAllForgetsEveryNamespace) {
+  Preferences a, b;
+  a.begin("ns_a", false);
+  b.begin("ns_b", false);
+  a.putInt("k", 1);
+  b.putInt("k", 2);
+
+  Preferences::mockResetAll();
+  EXPECT_FALSE(a.isKey("k"));
+  EXPECT_FALSE(b.isKey("k"));
+  EXPECT_FALSE(prefs.isKey("k"));
+}
