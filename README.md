@@ -6,7 +6,7 @@ ArduinoNativeMocks
 Host-native Arduino + FreeRTOS mocks to build and test Arduino-style code on your desktop using CMake. It provides light shims for common Arduino headers and a minimal FreeRTOS API implemented with C++ threads/condition_variables.
 
 **Highlights**
-- **Arduino shims:** `Arduino.h`, `WString.h`, `Stream.h` (plus a minimal `HardwareSerial`), and `times.h` (`millis`, `delay`).
+- **Arduino shims:** `Arduino.h`, `WString.h`, `Stream.h` (plus a minimal `HardwareSerial`), and `times.h` (`millis`, `micros`, `delay`, plus an opt-in controllable clock for tests).
 - **FreeRTOS subset:** `freertos/FreeRTOS.h` (+ `FreeRTOSConfig.h`, `projdefs.h`) and modules: `queue`, `semaphore`, `task`, with hooks in `freertos_hooks.c`.
 - **Logging:** `esp_log.h` macros (`log_e`, `log_w`, `log_i`, etc.) with colorized console output; configurable `LOG_LEVEL`.
 - **Host-native build:** Single static library `ArduinoNativeMocks` that you can link into unit tests or example apps.
